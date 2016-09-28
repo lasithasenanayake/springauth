@@ -1,5 +1,6 @@
 package com.sossgrid.authlib;
 
+import java.util.HashMap;
 
 public class AuthCertificate {
 	private String userid;
@@ -7,13 +8,17 @@ public class AuthCertificate {
 	private String domain;
 	private String token;
 	private String clientIP;
+	private String jwt;
+	private HashMap<String,Object> otherdata;
 	//private Map.Entry<String,String> OtherData
-	public AuthCertificate(String UserID,String Email,String Domain,String Token,String ClientIP){
+	public AuthCertificate(String UserID,String Email,String Domain,String Token,String ClientIP,String JWT,HashMap<String,Object> OtherData){
 		userid=UserID;
 		email=Email;
 		domain=Domain;
 		token=Token;
 		clientIP=ClientIP;
+		otherdata=OtherData;
+		jwt =JWT;
 		
 	}
 	
@@ -46,6 +51,22 @@ public class AuthCertificate {
 	}
 	public void setClientIP(String clientIP) {
 		this.clientIP = clientIP;
+	}
+
+	public HashMap<String,Object> getOtherData() {
+		return otherdata;
+	}
+
+	public void setOtherData(HashMap<String,Object> otherData) {
+		otherdata = otherData;
+	}
+
+	public String getJwt() {
+		return jwt;
+	}
+
+	public void setJwt(String jwt) {
+		this.jwt = jwt;
 	}
 
 }

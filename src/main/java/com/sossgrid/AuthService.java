@@ -5,6 +5,7 @@
  */
 package com.sossgrid;
 
+import java.util.HashMap;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +24,11 @@ public class AuthService {
 			@PathVariable String Domain) throws UnAutherizedException{
 		
 		if(Email.equals("admin") && Password.equals("admin")){
-			AuthCertificate authc=new AuthCertificate("123", Email, "Domain", "Token", "ClientIP");
+			HashMap<String,Object> map=new HashMap<String,Object>();
+			map.put("JWT", "value");
+			AuthCertificate authc=new AuthCertificate("123", Email, Domain, "Token", "ClientIP","",map);
 			return authc;
-		}else{
+		}else{;
 			throw new UnAutherizedException("email or password Incorrect.");
 		}
 	}
