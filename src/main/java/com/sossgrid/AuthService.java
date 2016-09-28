@@ -4,7 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import com.sossgrid.authlib.*;
 import com.sossgrid.exceptions.UnAutherizedException;
 
 @Controller
@@ -22,5 +22,21 @@ public class AuthService {
 		}else{
 			throw new UnAutherizedException("email or password Incorrect.");
 		}
+	}
+	
+	@RequestMapping(value="/getsession/")
+	public @ResponseBody AuthCertificate GetSession(
+			@PathVariable String Token,
+			@PathVariable String Domain
+			) throws UnAutherizedException{
+		throw new UnAutherizedException("Not Implemented");
+	}
+	
+	@RequestMapping(value="/createuser/")
+	public @ResponseBody AuthCertificate CreateUser(
+			@PathVariable String Token,
+			@PathVariable String Domain
+			) throws UnAutherizedException{
+		throw new UnAutherizedException("Not Implemented");
 	}
 }

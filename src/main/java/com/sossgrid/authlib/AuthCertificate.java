@@ -1,4 +1,4 @@
-package com.sossgrid;
+package com.sossgrid.authlib;
 
 
 public class AuthCertificate {
