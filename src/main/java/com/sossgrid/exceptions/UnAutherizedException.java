@@ -4,7 +4,7 @@ package com.sossgrid.exceptions;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value=HttpStatus.UNAUTHORIZED,reason="No Access to the System.")
+@ResponseStatus(value=HttpStatus.UNAUTHORIZED)
 public class UnAutherizedException extends Exception{
 
 	/**
@@ -14,7 +14,12 @@ public class UnAutherizedException extends Exception{
 	
 	public UnAutherizedException(String Reason){
 		//this.reason
+		super(Reason);
 		
 	}
+	
+
+	
+	
 
 }
