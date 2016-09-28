@@ -1,3 +1,8 @@
+/*
+ * Java Authentication Service(Base : Spring)
+ * Initiated By : lasithasenanayake
+ * Date 		: 28/09/2016
+ */
 package com.sossgrid;
 
 import org.springframework.stereotype.Controller;
@@ -10,6 +15,7 @@ import com.sossgrid.exceptions.UnAutherizedException;
 @Controller
 public class AuthService {
 	
+	//Login Represents Authenticating users 
 	@RequestMapping(value="/login/{Email}/{Password}/{Domain}")
 	public @ResponseBody AuthCertificate Login(
 			@PathVariable String Email,
@@ -24,7 +30,8 @@ public class AuthService {
 		}
 	}
 	
-	@RequestMapping(value="/getsession/")
+	//GetSession Represents validating security token or obtaining a new token for a specific domain
+	@RequestMapping(value="/getsession/{Token}/{Domain}")
 	public @ResponseBody AuthCertificate GetSession(
 			@PathVariable String Token,
 			@PathVariable String Domain
@@ -32,10 +39,20 @@ public class AuthService {
 		throw new UnAutherizedException("Not Implemented");
 	}
 	
+	//CreateUser Represents Creation of the user 
 	@RequestMapping(value="/createuser/")
 	public @ResponseBody AuthCertificate CreateUser(
 			@PathVariable String Token,
 			@PathVariable String Domain
+			) throws UnAutherizedException{
+		throw new UnAutherizedException("Not Implemented");
+	}
+	
+
+	//CreateUser Represents Activate of the user account
+	@RequestMapping(value="/activate/{Token}")
+	public @ResponseBody AuthCertificate Activate(
+			@PathVariable String Token
 			) throws UnAutherizedException{
 		throw new UnAutherizedException("Not Implemented");
 	}
