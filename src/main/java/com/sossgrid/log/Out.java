@@ -6,11 +6,11 @@ public class Out {
 		DEBUG, ERROR,INFORMATION
 	}
 	
-	public void Write(String str,Type Info){
+	public static void Write(String str,Type Info){
 		System.out.println(str);
 	}
 	
-	public void Write(Object obj,Type Info){
+	public static void Write(Object obj,Type Info){
 		System.out.println(obj);
 	}
 
