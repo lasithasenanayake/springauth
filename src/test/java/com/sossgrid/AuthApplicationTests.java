@@ -8,9 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.mysql.jdbc.log.Log;
 import com.sossgrid.authlib.AuthCertificate;
 import com.sossgrid.file.Store;
+import com.sossgrid.log.Out;
+import com.sossgrid.log.Out.LogType;
 import com.sossgrid.mysql.MysqlTest;
+import com.sossgrid.mysql.TestObject;
 
 import junit.framework.Assert;
 
@@ -39,8 +43,14 @@ public class AuthApplicationTests {
 		}
 		
 		
-		
-		
+		MysqlTest mytest =new MysqlTest();
+		TestObject someObject=new TestObject();
+		someObject.setComplexobject(authc);
+		//System.out.println(someObject);
+		String strInsert =mytest.GenerateInsert(someObject, "Nameddddd");
+		System.out.println(strInsert.toString());
+		String strCreate =mytest.GenerateCreate(someObject, "Name");//(someObject, "Nameddddd");
+		System.out.println(strCreate.toString());
 	}
 
 }
