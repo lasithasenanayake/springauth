@@ -48,6 +48,7 @@ public class MysqlConnector implements IDataConnector{
 	@Override
 	public StatusMessage Store(String Name, Object Obj) {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 

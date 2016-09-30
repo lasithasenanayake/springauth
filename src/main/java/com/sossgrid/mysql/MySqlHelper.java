@@ -1,28 +1,14 @@
 package com.sossgrid.mysql;
 
-import static org.assertj.core.api.Assertions.catchThrowable;
-
-import java.io.StringWriter;
 import java.lang.reflect.Field;
-import java.util.Date;
-import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
 
-
-//import java.lang.Reflect.Field;
-
-public class MysqlTest {
-
-	public void ConnectDatabase(HashMap<String,String> o) throws Exception{
-		MysqlConnector c =new MysqlConnector();
-		c.CreateConnection(o);
-	}
+public class MySqlHelper {
 	
-	public String GenerateValueParam(Field field,Object value){
+	private static String GenerateValueParam(Field field,Object value){
 		String strValue="";
 		if(value==null){
 			return "NULL,";
@@ -68,7 +54,7 @@ public class MysqlTest {
 		return strValue;
 	}
 	
-	public String GenerateInsert(Object someObject,String Name){
+	public static String GetInsert(Object someObject,String Name){
 		
 		
 		String strSql="Insert Into "+ Name;
@@ -104,7 +90,7 @@ public class MysqlTest {
 		return strSql + strColumn + strValues;
 	}
 	
-	public String ConvertSQLtype(String datatype){
+	public static String ConvertSQLtype(String datatype){
 		String strValue="";
 		
 		//System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
@@ -141,7 +127,7 @@ public class MysqlTest {
 		return strValue;
 	}
 	
-	public String GenerateCreate(Object someObject,String Name){
+	public static String GenerateCreate(Object someObject,String Name){
 		String strSql="Create Table "+ Name;
 		String strColumn="(";
 		//String strValues="Values(";
@@ -171,5 +157,5 @@ public class MysqlTest {
 		strColumn=strColumn.substring(0, strColumn.length()-1)+") ";
 		return strSql + strColumn;
 	}
-	
+
 }
