@@ -7,7 +7,7 @@ import com.sossgrid.log.Out;
 
 public class Store {
 	
-	public static void ObjectWrite(Object obj,String FileName){
+	public  static <T> void ObjectWrite(T obj,String FileName){
 		File f=new File(FileName);
 		if(f.exists()){
 			f.delete();
@@ -20,12 +20,12 @@ public class Store {
 			
 			}catch (Exception e) {
 				// TODO: handle exception
-				Out.Write(e.getMessage(), Out.Type.ERROR);
+				Out.Write(e.getMessage(), Out.LogType.ERROR);
 			}
 		}
 	}
 	
-	public void Append(Object obj,String FileName){
+	public <T> void  Append(T obj,String FileName){
 		
 	}
 
