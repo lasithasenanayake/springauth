@@ -158,21 +158,12 @@ public class MySqlHelper {
 		for (Field field : someObject.getClass().getDeclaredFields()) {
 			
 		    field.setAccessible(true); // You might want to set modifier to public first.
-		    Object value;
 			try {
-				//System.out.println(field.getName() + "=" + "value" + " type " +field.getType().getName());
-				value = field.get(someObject);
-				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
-				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType().getName());
-			    //strValues+=GenerateValueParam(field,value);    		    
-				
+				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType().getName());    		    
 				
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Out.Write("GetCreateTableStatment "+e.getMessage(), LogType.ERROR);
 			} 
 			
 		    

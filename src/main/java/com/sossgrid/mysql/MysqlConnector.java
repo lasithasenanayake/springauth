@@ -66,6 +66,18 @@ public class MysqlConnector implements IDataConnector{
 					Out.Write(e.getErrorCode(), LogType.ERROR);
 					Out.Write(e.getMessage(), LogType.ERROR);
 					//e.printStackTrace();
+					try {
+						Out.Write("Creating or altering table", LogType.DEBUG);
+						MySqlHelper.GenerateTable(Obj, Name, con);
+						Out.Write("Retry SQL command.", LogType.DEBUG);
+						Store(Name,Obj,commadtype);
+						
+					} catch (SQLException e1) {
+						// TODO Auto-generated catch block
+						status =new StatusMessage(true, e1.getMessage(), Obj);
+						return status;
+						
+					}
 				}
 				
 			}
@@ -76,7 +88,7 @@ public class MysqlConnector implements IDataConnector{
 		
 		}
 		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
-		return null;
+		return status;
 	}
 	
 	private  boolean isDbConnected() {
