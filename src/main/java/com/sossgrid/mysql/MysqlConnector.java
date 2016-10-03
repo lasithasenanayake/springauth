@@ -58,8 +58,8 @@ public class MysqlConnector implements IDataConnector{
 			if(isDbConnected()){
 				String insertSQL=MySqlHelper.GetInsert(Obj, Name);
 				try {
-					PreparedStatement insertStatment =con.prepareStatement(insertSQL);
-					insertStatment.executeQuery();
+					int insertStatment =con.createStatement().executeUpdate(insertSQL);
+					//insertStatment.executeQuery();
 					status=new StatusMessage(false,"", Obj);
 					return status;
 				} catch (SQLException e) {
@@ -75,6 +75,7 @@ public class MysqlConnector implements IDataConnector{
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
 						status =new StatusMessage(true, e1.getMessage(), Obj);
+						
 						return status;
 						
 					}

@@ -109,7 +109,7 @@ public class MySqlHelper {
 				strValue="DECIMAL NULL,";
 				break;
 			case "short":
-				strValue="SHORT NULL,";
+				strValue="LONG NULL,";
 				break;
 			case "long":
 				strValue="LONG NULL,";
@@ -144,7 +144,7 @@ public class MySqlHelper {
 			Out.Write(e.getMessage(), LogType.ERROR);
 			Out.Write(e.getErrorCode(), LogType.ERROR);
 			String createSQl=GetCreateTableStatment(someObject,Name);
-			con.createStatement().executeQuery(createSQl);
+			con.createStatement().executeUpdate(createSQl);
 		}
 		
 		//return strSql + strColumn;
@@ -168,8 +168,10 @@ public class MySqlHelper {
 			
 		    
 		}
-		strColumn=strColumn.substring(0, strColumn.length()-1)+") ";
+		strColumn=strColumn.substring(0, strColumn.length()-1)+")";
 		return strSql + strColumn;
 	}
+	
+	
 
 }
