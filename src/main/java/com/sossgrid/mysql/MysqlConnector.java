@@ -1,6 +1,8 @@
 package com.sossgrid.mysql;
 
 import java.util.HashMap;
+
+import com.sossgrid.datastore.*;
 import com.sossgrid.datastore.IDataConnector;
 import com.sossgrid.datastore.StatusMessage;
 import com.sossgrid.log.Out;
@@ -8,6 +10,8 @@ import com.sossgrid.log.Out.LogType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MysqlConnector implements IDataConnector{
@@ -46,10 +50,47 @@ public class MysqlConnector implements IDataConnector{
 	}
 
 	@Override
-	public StatusMessage Store(String Name, Object Obj) {
-		// TODO Auto-generated method stub
+	public StatusMessage Store(String Name, Object Obj,DataStoreCommandType commadtype) {
+		StatusMessage status;
 		
+		switch(commadtype){
+		case InsertRecord:
+			if(isDbConnected()){
+				String insertSQL=MySqlHelper.GetInsert(Obj, Name);
+				try {
+					PreparedStatement insertStatment =con.prepareStatement(insertSQL);
+					insertStatment.executeQuery();
+					status=new StatusMessage(false,"", Obj);
+					return status;
+				} catch (SQLException e) {
+					Out.Write(e.getErrorCode(), LogType.ERROR);
+					Out.Write(e.getMessage(), LogType.ERROR);
+					//e.printStackTrace();
+				}
+				
+			}
+			break;
+		case UpdateRecord:
+		
+			break;
+		
+		}
+		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
 		return null;
+	}
+	
+	private  boolean isDbConnected() {
+	    //final String CHECK_SQL_QUERY = "SELECT 1";
+	    try {
+			if(!con.isClosed() || con!=null){
+				return true;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			return false;
+		}
+	    return false;
+		
 	}
 
 	@Override

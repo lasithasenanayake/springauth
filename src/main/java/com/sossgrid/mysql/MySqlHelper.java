@@ -1,6 +1,7 @@
 package com.sossgrid.mysql;
 
 import java.lang.reflect.Field;
+import java.sql.Connection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sossgrid.log.Out;
@@ -127,7 +128,7 @@ public class MySqlHelper {
 		return strValue;
 	}
 	
-	public static String GenerateCreate(Object someObject,String Name){
+	public static String GenerateTable(Object someObject,String Name,Connection con){
 		String strSql="Create Table "+ Name;
 		String strColumn="(";
 		//String strValues="Values(";
