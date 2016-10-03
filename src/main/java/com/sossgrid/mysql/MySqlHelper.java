@@ -2,6 +2,9 @@ package com.sossgrid.mysql;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sossgrid.log.Out;
@@ -128,7 +131,26 @@ public class MySqlHelper {
 		return strValue;
 	}
 	
-	public static String GenerateTable(Object someObject,String Name,Connection con){
+	public static void GenerateTable(Object someObject,String Name,Connection con) throws SQLException{
+		
+		try {
+			ResultSet rs =con.prepareStatement("Select * from "+Name+" limit 0,0;").executeQuery();
+			ResultSetMetaData mdata=rs.getMetaData();
+			//Alter Table script
+			
+			throw new SQLException("Not Implemented Alter Table");
+			
+		} catch (SQLException e) {
+			Out.Write(e.getMessage(), LogType.ERROR);
+			Out.Write(e.getErrorCode(), LogType.ERROR);
+			String createSQl=GetCreateTableStatment(someObject,Name);
+			con.createStatement().executeQuery(createSQl);
+		}
+		
+		//return strSql + strColumn;
+	}
+	
+	public static String GetCreateTableStatment(Object someObject,String Name){
 		String strSql="Create Table "+ Name;
 		String strColumn="(";
 		//String strValues="Values(";
