@@ -2,6 +2,8 @@ package com.sossgrid;
 
 import static org.junit.Assert.assertEquals;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -57,14 +59,19 @@ public class AuthApplicationTests {
 		String strInsert =mytest.GenerateInsert(someObject, "Nameddddd");
 		System.out.println(strInsert.toString());
 		String strCreate =mytest.GenerateCreate(someObject, "Name");//(someObject, "Nameddddd");
-		System.out.println(strCreate.toString());
+		java.util.Date myDate = new java.util.Date();
+		System.out.println(myDate);
+		System.out.println(new SimpleDateFormat("MM-dd-yyyy").format(myDate));
+		System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(myDate));
+		System.out.println(myDate);
+		//System.out.println(mytest.DateConvertSqlString(new java.util.Date()));
 	}
 	
 	@Test 
 	public void TestMySqlComponetInsert() throws Exception{
 		HashMap<String,String> o=new HashMap<String,String>();
 		o.put("server", "localhost");
-		o.put("database", "test2");
+		o.put("database", "supun");
 		o.put("username", "root");
 		o.put("password", "sossgrid");
 		o.put("dataadapter", "com.sossgrid.mysql.MysqlConnector");
@@ -74,8 +81,9 @@ public class AuthApplicationTests {
 		
 		TestObject testobj=new TestObject();
 		testobj.setBooleanvalue(true);
-		testobj.setName("Lasitha Senanayake");
-		StatusMessage st=mysql.Store("Lasitha", testobj,DataStoreCommandType.InsertRecord);
+		testobj.setName("Lasitha Senanayake1");
+		testobj.setDateTime(new java.util.Date());
+		StatusMessage st=mysql.Store("supun3", testobj,DataStoreCommandType.InsertRecord);
 		
 		assertEquals(st.isError(), false);
 		System.out.println(st.getMessage());
@@ -84,5 +92,7 @@ public class AuthApplicationTests {
 		
 		
 	}
+	
+	
 
 }

@@ -1,6 +1,7 @@
 package com.sossgrid.mysql;
 
 import java.util.HashMap;
+import java.util.List;
 
 import com.sossgrid.datastore.*;
 import com.sossgrid.datastore.IDataConnector;
@@ -75,9 +76,12 @@ public class MysqlConnector implements IDataConnector{
 					} catch (SQLException e1) {
 						// TODO Auto-generated catch block
 						status =new StatusMessage(true, e1.getMessage(), Obj);
-						
 						return status;
 						
+					}catch (Exception e2) {
+						// TODO: handle exception
+						status =new StatusMessage(true, e2.getMessage(), Obj);
+						return status;
 					}
 				}
 				
@@ -127,6 +131,8 @@ public class MysqlConnector implements IDataConnector{
 	@Override
 	public <T> T[] Retrive(String Name, HashMap<String, Object> QueryField) {
 		// TODO Auto-generated method stub
+		//List<T> newlistOfRecords =List<T>();
+		
 		return null;
 	}
 

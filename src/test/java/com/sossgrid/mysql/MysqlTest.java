@@ -4,8 +4,11 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -170,6 +173,24 @@ public class MysqlTest {
 		}
 		strColumn=strColumn.substring(0, strColumn.length()-1)+") ";
 		return strSql + strColumn;
+	}
+	
+	public <T> List<T> GetRecords(Class<T> c){
+		List<T> list=new ArrayList<T>();
+		//Class<T>().new
+		try {
+			Object x= c.newInstance();
+			//x.
+		} catch (InstantiationException | IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		return list;
+	}
+	
+	public String DateConvertSqlString(java.util.Date date){
+		SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy H:i:s");
+		return "'"+formatter.format((java.util.Date)date)+"',";
 	}
 	
 }

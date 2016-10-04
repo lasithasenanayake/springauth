@@ -1,14 +1,15 @@
 package com.sossgrid.mysql;
 
-import java.sql.Date;
+import java.util.Date;
 
 import com.sossgrid.authlib.AuthCertificate;
+import com.sossgrid.datastore.DataType;
 
 public class TestObject {
 	
+	@DataType(IsPrimary=true,MaxLen=200)
 	private String name;
 	private Date dateTime;
-	@Primary
 	private int intvalue;
 	private float floatvalue;
 	private double doublevalue;
