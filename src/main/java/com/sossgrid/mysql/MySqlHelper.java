@@ -92,11 +92,122 @@ public class MySqlHelper {
 			
 		    
 		}
-		strColumn=strColumn.substring(0, strColumn.length()-1)+") ";
+		strColumn=strColumn+"sysversionid)  ";
 		Out.Write(strValues, LogType.DEBUG);
-		strValues=strValues.substring(0, strValues.length()-1)+");";
+		strValues=strValues+""+com.sossgrid.common.DataFunction.GetVersionID()+");";
 		Out.Write( strSql + strColumn + strValues, LogType.DEBUG);
 		return strSql + strColumn + strValues;
+	}
+	
+	public static String GetUpdate(Object someObject,String Name){
+		
+		
+		String strSql="Update "+ Name + " SET ";
+		String strColumn="";
+		String strWhere=" Where ";
+		System.out.println(someObject);
+		for (Field field : someObject.getClass().getDeclaredFields()) {
+			//field.getAnnotations()
+		    field.setAccessible(true); // You might want to set modifier to public first.
+		    Object value;
+			try {
+				Annotation[] annotations = field.getAnnotations();
+				DataType dType = null;
+				boolean isprimary=false;
+				int datalength=0;
+				for (Annotation a : annotations){
+					Out.Write(a.annotationType().getName(), LogType.DEBUG);
+					if (a.annotationType().getName().equals("com.sossgrid.datastore.DataType")){
+						dType = (DataType)a;
+						break;
+					}
+				}
+				
+				if (dType !=null){
+					isprimary=dType.IsPrimary();
+				}
+				
+				value = field.get(someObject);
+				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
+				if(!isprimary){
+					strColumn+=field.getName()+"="+GenerateValueParam(field,value);
+				}else{
+					String strval =GenerateValueParam(field,value);
+					strval=strval.substring(0,strval.length()-1);
+					strWhere+=field.getName()+"="+strval + " and ";
+				}
+				
+				
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			
+		    
+		}
+		strColumn=strColumn+"sysversionid="+com.sossgrid.common.DataFunction.GetVersionID();
+		Out.Write(strWhere, LogType.DEBUG);
+		strWhere=strWhere.substring(0, strWhere.length()-5);
+		//strValues=strValues+""+com.sossgrid.common.DataFunction.GetVersionID()+");";
+		Out.Write( strSql + strColumn + strWhere, LogType.DEBUG);
+		return strSql + strColumn + strWhere;
+	}
+	
+	public static String GetDelete(Object someObject,String Name){
+		
+		
+		String strSql="Delete From "+ Name ;
+		//String strColumn="";
+		String strWhere=" Where ";
+		System.out.println(someObject);
+		for (Field field : someObject.getClass().getDeclaredFields()) {
+			//field.getAnnotations()
+		    field.setAccessible(true); // You might want to set modifier to public first.
+		    Object value;
+			try {
+				Annotation[] annotations = field.getAnnotations();
+				DataType dType = null;
+				boolean isprimary=false;
+				int datalength=0;
+				for (Annotation a : annotations){
+					Out.Write(a.annotationType().getName(), LogType.DEBUG);
+					if (a.annotationType().getName().equals("com.sossgrid.datastore.DataType")){
+						dType = (DataType)a;
+						break;
+					}
+				}
+				
+				if (dType !=null){
+					isprimary=dType.IsPrimary();
+				}
+				
+				value = field.get(someObject);
+				
+				if(isprimary){
+					String strval =GenerateValueParam(field,value);
+					strval=strval.substring(0,strval.length()-1);
+					strWhere+=field.getName()+"="+strval + " and ";
+				}
+				
+				
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			
+		    
+		}
+		
+		Out.Write(strWhere, LogType.DEBUG);
+		strWhere=strWhere.substring(0, strWhere.length()-5);
+		Out.Write( strSql  + strWhere, LogType.DEBUG);
+		return strSql +strWhere;
 	}
 	
 	public static String ConvertSQLtype(String datatype,int datalength,boolean isNull){
@@ -286,6 +397,7 @@ public class MySqlHelper {
 			
 		    
 		}
+		strColumn+="sysversionid long NOT NULL,";
 		if(strPrimaryKeys.equals("PRIMARY KEY (")){
 			strColumn=strColumn.substring(0, strColumn.length()-1)+")";
 		}else{

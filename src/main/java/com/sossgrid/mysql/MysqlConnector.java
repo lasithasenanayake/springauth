@@ -88,7 +88,34 @@ public class MysqlConnector implements IDataConnector{
 			}
 			break;
 		case UpdateRecord:
-		
+			String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
+			try {
+				int insertStatment =con.createStatement().executeUpdate(updateSQL);
+				//insertStatment.executeQuery();
+				//if(insertStatment!=0)
+				status=new StatusMessage(false,"", Obj);
+				return status;
+			} catch (SQLException e) {
+				Out.Write(e.getErrorCode(), LogType.ERROR);
+				Out.Write(e.getMessage(), LogType.ERROR);
+				//e.printStackTrace();
+				try {
+					Out.Write("Creating or altering table", LogType.DEBUG);
+					MySqlHelper.GenerateTable(Obj, Name, con);
+					Out.Write("Retry SQL command.", LogType.DEBUG);
+					Store(Name,Obj,commadtype);
+					
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					status =new StatusMessage(true, e1.getMessage(), Obj);
+					return status;
+					
+				}catch (Exception e2) {
+					// TODO: handle exception
+					status =new StatusMessage(true, e2.getMessage(), Obj);
+					return status;
+				}
+			}
 			break;
 		
 		}
@@ -118,8 +145,22 @@ public class MysqlConnector implements IDataConnector{
 
 	@Override
 	public StatusMessage Delete(String Name, Object Obj) {
-		// TODO Auto-generated method stub
-		return null;
+		StatusMessage status;
+		String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
+		try {
+			int insertStatment =con.createStatement().executeUpdate(updateSQL);
+			//insertStatment.executeQuery();
+			//if(insertStatment!=0)
+			status=new StatusMessage(false,"", Obj);
+			return status;
+		} catch (SQLException e) {
+			Out.Write(e.getErrorCode(), LogType.ERROR);
+			Out.Write(e.getMessage(), LogType.ERROR);
+		}
+		
+		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
+		return status;
+		
 	}
 
 	@Override

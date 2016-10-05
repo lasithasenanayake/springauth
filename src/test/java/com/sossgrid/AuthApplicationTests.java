@@ -81,17 +81,21 @@ public class AuthApplicationTests {
 		
 		TestObject testobj=new TestObject();
 		testobj.setBooleanvalue(true);
-		testobj.setName("Lasitha Senanayake1");
+		testobj.setName(new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date()));
 		testobj.setDateTime(new java.util.Date());
-		StatusMessage st=mysql.Store("supun3", testobj,DataStoreCommandType.InsertRecord);
+		StatusMessage st=mysql.Store("supun4", testobj,DataStoreCommandType.InsertRecord);
 		
 		assertEquals(st.isError(), false);
 		System.out.println(st.getMessage());
+		testobj.setDoublevalue(200);
 		
-		//mysql.
+		st=mysql.Store("supun4", testobj, DataStoreCommandType.UpdateRecord);
+		assertEquals(st.isError(), false);
 		
 		
 	}
+	
+	
 	
 	
 
