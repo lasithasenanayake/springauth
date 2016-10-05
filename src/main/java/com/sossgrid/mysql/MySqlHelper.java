@@ -7,8 +7,11 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sossgrid.datastore.DataStoreCommandType;
 import com.sossgrid.datastore.DataType;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
@@ -16,45 +19,45 @@ import com.sossgrid.log.Out.LogType;
 
 public class MySqlHelper {
 	
-	private static String GenerateValueParam(Field field,Object value){
+	private static String GenerateValueParam(String fieldtype,Object value){
 		String strValue="";
 		if(value==null){
-			return "NULL,";
+			return "NULL";
 		}
-		System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
-        switch(field.getType().getName()){
+		//System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
+        switch(fieldtype){
 			case "int":
-				strValue=value.toString()+",";
+				strValue=value.toString()+"";
 				break;
 			case "float":
-				strValue=value.toString()+",";
+				strValue=value.toString()+"";
 				break;
 			case "double":
-				strValue=value.toString()+",";
+				strValue=value.toString()+"";
 				break;
 			case "short":
-				strValue=value.toString()+",";
+				strValue=value.toString()+"";
 				break;
 			case "long":
-				strValue=value.toString()+",";
+				strValue=value.toString()+"";
 				break;
 			case "java.lang.String":
-				strValue="'"+value.toString()+"',";
+				strValue="'"+value.toString()+"'";
 				break;
 			case "java.util.Date":
 				SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-				strValue= "STR_TO_DATE('"+formatter.format((java.util.Date)value)+"','%m-%d-%Y %H:%i:%s'),";
+				strValue= "STR_TO_DATE('"+formatter.format((java.util.Date)value)+"','%m-%d-%Y %H:%i:%s')";
 				break;
 			case "boolean":
-				strValue="'"+value.toString()+"',";
+				strValue="'"+value.toString()+"'";
 				break;
 			default:
 				ObjectMapper ow = new ObjectMapper();
 				try{
 					String json =ow.writeValueAsString(value);
-					strValue="'"+json.toString()+"',";
+					strValue="'"+json.toString()+"'";
 				}catch (Exception e) {
-					strValue="'"+e.getMessage()+"',";
+					strValue="'"+e.getMessage()+"'";
 					// TODO: handle exception
 				}
 				break;
@@ -79,7 +82,7 @@ public class MySqlHelper {
 				value = field.get(someObject);
 				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
 				strColumn+=field.getName()+",";
-			    strValues+=GenerateValueParam(field,value);    		    
+			    strValues+=GenerateValueParam(field.getType().getName(),value)+",";    		    
 				
 				
 			} catch (IllegalArgumentException e) {
@@ -130,10 +133,10 @@ public class MySqlHelper {
 				value = field.get(someObject);
 				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
 				if(!isprimary){
-					strColumn+=field.getName()+"="+GenerateValueParam(field,value);
+					strColumn+=field.getName()+"="+GenerateValueParam(field.getType().getName(),value)+",";
 				}else{
-					String strval =GenerateValueParam(field,value);
-					strval=strval.substring(0,strval.length()-1);
+					String strval =GenerateValueParam(field.getType().getName(),value);
+					strval=strval;
 					strWhere+=field.getName()+"="+strval + " and ";
 				}
 				
@@ -154,6 +157,22 @@ public class MySqlHelper {
 		//strValues=strValues+""+com.sossgrid.common.DataFunction.GetVersionID()+");";
 		Out.Write( strSql + strColumn + strWhere, LogType.DEBUG);
 		return strSql + strColumn + strWhere;
+	}
+	
+	public static String GetSelect(String Name, HashMap<String, Object> QueryField){
+		String strSelect ="Select * from "+Name;
+		boolean first=true;
+		for(Entry<String, Object> entry : QueryField.entrySet()) {
+		    String key = entry.getKey();
+		    if(first){
+		    	strSelect+=" Where "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
+		    }else{
+		    	strSelect+=" and "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
+		    }
+		}
+		Out.Write(strSelect,LogType.DEBUG);
+		return strSelect;
+		
 	}
 	
 	public static String GetDelete(Object someObject,String Name){
@@ -187,7 +206,7 @@ public class MySqlHelper {
 				value = field.get(someObject);
 				
 				if(isprimary){
-					String strval =GenerateValueParam(field,value);
+					String strval =GenerateValueParam(field.getType().getName(),value);
 					strval=strval.substring(0,strval.length()-1);
 					strWhere+=field.getName()+"="+strval + " and ";
 				}

@@ -1,19 +1,22 @@
 package com.sossgrid.mysql;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sossgrid.datastore.*;
 import com.sossgrid.datastore.IDataConnector;
 import com.sossgrid.datastore.StatusMessage;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 
 public class MysqlConnector implements IDataConnector{
 	private Connection con;
@@ -59,7 +62,7 @@ public class MysqlConnector implements IDataConnector{
 			if(isDbConnected()){
 				String insertSQL=MySqlHelper.GetInsert(Obj, Name);
 				try {
-					int insertStatment =con.createStatement().executeUpdate(insertSQL);
+					con.createStatement().executeUpdate(insertSQL);
 					//insertStatment.executeQuery();
 					status=new StatusMessage(false,"", Obj);
 					return status;
@@ -90,9 +93,7 @@ public class MysqlConnector implements IDataConnector{
 		case UpdateRecord:
 			String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
 			try {
-				int insertStatment =con.createStatement().executeUpdate(updateSQL);
-				//insertStatment.executeQuery();
-				//if(insertStatment!=0)
+				con.createStatement().executeUpdate(updateSQL);
 				status=new StatusMessage(false,"", Obj);
 				return status;
 			} catch (SQLException e) {
@@ -148,9 +149,7 @@ public class MysqlConnector implements IDataConnector{
 		StatusMessage status;
 		String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
 		try {
-			int insertStatment =con.createStatement().executeUpdate(updateSQL);
-			//insertStatment.executeQuery();
-			//if(insertStatment!=0)
+			con.createStatement().executeUpdate(updateSQL);
 			status=new StatusMessage(false,"", Obj);
 			return status;
 		} catch (SQLException e) {
@@ -170,11 +169,71 @@ public class MysqlConnector implements IDataConnector{
 	}
 
 	@Override
-	public <T> T[] Retrive(String Name, HashMap<String, Object> QueryField) {
+	public <T> ArrayList<T> Retrive(String Name, HashMap<String, Object> QueryField,Class<T> c) {
 		// TODO Auto-generated method stub
-		//List<T> newlistOfRecords =List<T>();
+		ArrayList<T> newlistOfRecords =new ArrayList<T>();
 		
-		return null;
+		try {
+			if(isDbConnected()){
+				
+				ResultSet rs=con.prepareStatement(MySqlHelper.GetSelect(Name, QueryField)).executeQuery();
+				while (rs.next()) {
+					Object obj=c.newInstance();
+					
+					for (Field field : c.getDeclaredFields()) {
+						field.setAccessible(true);
+						Out.Write(rs.getString(field.getName()), LogType.DEBUG);
+						 switch(field.getType().getName()){
+							case "int":
+								field.setInt(obj, rs.getInt(field.getName()));
+								break;
+							case "float":
+								field.setFloat(obj, rs.getFloat(field.getName()));
+								break;
+							case "double":
+								field.setDouble(obj, rs.getDouble(field.getName()));
+								break;
+							case "short":
+								field.setShort(obj, rs.getShort(field.getName()));
+								break;
+							case "long":
+								field.setLong(obj, rs.getLong(field.getName()));
+								break;
+							case "java.lang.String":
+								field.set(obj, rs.getString(field.getName()));
+								break;
+							case "java.util.Date":
+								//field.set(obj,Date.parse(s)(rs.getDate(field.getName())));
+								break;
+							case "boolean":
+								//field.setDouble(obj, rs.getDouble(field.getName()));
+								break;
+							default:
+								ObjectMapper ow = new ObjectMapper();
+								/*
+								try{
+									String json =ow.readValue(rs.getString(field.getName()),);
+									strValue="'"+json.toString()+"',";
+								}catch (Exception e) {
+									strValue="'"+e.getMessage()+"',";
+									// TODO: handle exception
+								}*/
+								break;
+				        
+				        }
+						newlistOfRecords.add((T)obj);
+						
+					}
+			    }
+			}
+			
+		} catch (InstantiationException | IllegalAccessException | SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//T a[]=new T[newlistOfRecords.size()];
+		
+		return newlistOfRecords;
 	}
 
 	

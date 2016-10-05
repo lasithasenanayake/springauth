@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class AuthApplicationTests {
 		//System.out.println(someObject);
 		String strInsert =mytest.GenerateInsert(someObject, "Nameddddd");
 		System.out.println(strInsert.toString());
-		String strCreate =mytest.GenerateCreate(someObject, "Name");//(someObject, "Nameddddd");
+		String strCreate =mytest.GenerateCreate(someObject, "Name");
 		java.util.Date myDate = new java.util.Date();
 		System.out.println(myDate);
 		System.out.println(new SimpleDateFormat("MM-dd-yyyy").format(myDate));
@@ -78,7 +79,6 @@ public class AuthApplicationTests {
 		
 		mysql.CreateConnection(o);
 		
-		
 		TestObject testobj=new TestObject();
 		testobj.setBooleanvalue(true);
 		testobj.setName(new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date()));
@@ -92,7 +92,8 @@ public class AuthApplicationTests {
 		st=mysql.Store("supun4", testobj, DataStoreCommandType.UpdateRecord);
 		assertEquals(st.isError(), false);
 		
-		
+		ArrayList<TestObject> t= mysql.<TestObject>Retrive("supun4", new HashMap<String,Object>(), TestObject.class);
+		System.out.println(t);
 	}
 	
 	
