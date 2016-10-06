@@ -22,6 +22,10 @@ public class AuthCertificate {
 		
 	}
 	
+	public AuthCertificate(){
+		
+	}
+	
 	public String getUserid() {
 		return userid;
 	}

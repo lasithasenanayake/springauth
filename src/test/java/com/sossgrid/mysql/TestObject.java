@@ -16,7 +16,6 @@ public class TestObject {
 	private short shortvalue;
 	private long longvalue;
 	private boolean booleanvalue;
-	private char charvalue;
 	private AuthCertificate complexobject;
 	
 	
@@ -85,13 +84,7 @@ public class TestObject {
 		this.booleanvalue = booleanvalue;
 	}
 
-	public char getCharvalue() {
-		return charvalue;
-	}
-
-	public void setCharvalue(char charvalue) {
-		this.charvalue = charvalue;
-	}
+	
 
 	public AuthCertificate getComplexobject() {
 		return complexobject;

@@ -69,31 +69,40 @@ public class AuthApplicationTests {
 	}
 	
 	@Test 
-	public void TestMySqlComponetInsert() throws Exception{
+	public void TestMySqlComponetInsertCreateNewTable() throws Exception{
 		HashMap<String,String> o=new HashMap<String,String>();
 		o.put("server", "localhost");
 		o.put("database", "supun");
 		o.put("username", "root");
 		o.put("password", "sossgrid");
 		o.put("dataadapter", "com.sossgrid.mysql.MysqlConnector");
-		
+		String TableName="T"+new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date());
 		mysql.CreateConnection(o);
 		
 		TestObject testobj=new TestObject();
 		testobj.setBooleanvalue(true);
 		testobj.setName(new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date()));
 		testobj.setDateTime(new java.util.Date());
-		StatusMessage st=mysql.Store("supun4", testobj,DataStoreCommandType.InsertRecord);
-		
-		assertEquals(st.isError(), false);
+		StatusMessage st=mysql.Store(TableName, testobj,DataStoreCommandType.InsertRecord);
 		System.out.println(st.getMessage());
-		testobj.setDoublevalue(200);
-		
-		st=mysql.Store("supun4", testobj, DataStoreCommandType.UpdateRecord);
 		assertEquals(st.isError(), false);
 		
-		ArrayList<TestObject> t= mysql.<TestObject>Retrive("supun4", new HashMap<String,Object>(), TestObject.class);
-		System.out.println(t);
+		
+		testobj.setDoublevalue(200);
+		HashMap<String,Object> map=new HashMap<String,Object>();
+		map.put("JWT", "value");
+		AuthCertificate authc=new AuthCertificate("123", "Email", "Domain", "Token", "ClientIP","",map);
+		testobj.setComplexobject(authc);
+		st=mysql.Store(TableName, testobj, DataStoreCommandType.UpdateRecord);
+		assertEquals(st.isError(), false);
+		
+		ArrayList<TestObject> t= mysql.<TestObject>Retrive(TableName, new HashMap<String,Object>(), TestObject.class);
+		assertEquals(t.size(), 1);
+		
+		assertEquals(t.get(0).getName(), testobj.getName());
+		//assertEquals(t.get(0).getDateTime().getYear(), testobj.getDateTime().getYear());
+		assertEquals(t.get(0).getComplexobject().getDomain(), t.get(0).getComplexobject().getDomain());
+		 //newlistOfRecords.add((T)obj);
 	}
 	
 	

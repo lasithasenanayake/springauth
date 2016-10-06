@@ -70,21 +70,25 @@ public class MysqlConnector implements IDataConnector{
 					Out.Write(e.getErrorCode(), LogType.ERROR);
 					Out.Write(e.getMessage(), LogType.ERROR);
 					//e.printStackTrace();
-					try {
-						Out.Write("Creating or altering table", LogType.DEBUG);
-						MySqlHelper.GenerateTable(Obj, Name, con);
-						Out.Write("Retry SQL command.", LogType.DEBUG);
-						Store(Name,Obj,commadtype);
-						
-					} catch (SQLException e1) {
-						// TODO Auto-generated catch block
-						status =new StatusMessage(true, e1.getMessage(), Obj);
-						return status;
-						
-					}catch (Exception e2) {
-						// TODO: handle exception
-						status =new StatusMessage(true, e2.getMessage(), Obj);
-						return status;
+					if(e.getErrorCode()==1146){
+						try {
+							Out.Write("Creating or altering table", LogType.DEBUG);
+							MySqlHelper.GenerateTable(Obj, Name, con);
+							Out.Write("Retry SQL command.", LogType.DEBUG);
+							Store(Name,Obj,commadtype);
+							status=new StatusMessage(false,"", Obj);
+							return status;
+							
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							status =new StatusMessage(true, e1.getMessage(), Obj);
+							return status;
+							
+						}catch (Exception e2) {
+							// TODO: handle exception
+							status =new StatusMessage(true, e2.getMessage(), Obj);
+							return status;
+						}
 					}
 				}
 				
@@ -105,7 +109,8 @@ public class MysqlConnector implements IDataConnector{
 					MySqlHelper.GenerateTable(Obj, Name, con);
 					Out.Write("Retry SQL command.", LogType.DEBUG);
 					Store(Name,Obj,commadtype);
-					
+					status=new StatusMessage(false,"", Obj);
+					return status;
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					status =new StatusMessage(true, e1.getMessage(), Obj);
@@ -117,7 +122,7 @@ public class MysqlConnector implements IDataConnector{
 					return status;
 				}
 			}
-			break;
+			//break;
 		
 		}
 		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
@@ -203,27 +208,31 @@ public class MysqlConnector implements IDataConnector{
 								field.set(obj, rs.getString(field.getName()));
 								break;
 							case "java.util.Date":
-								//field.set(obj,Date.parse(s)(rs.getDate(field.getName())));
+								java.sql.Date d=rs.getDate(field.getName());
+								//java.util.Date d2=d;
+								field.set(obj,d);
 								break;
 							case "boolean":
-								//field.setDouble(obj, rs.getDouble(field.getName()));
+								
+								field.setBoolean(obj, Boolean.parseBoolean(rs.getString(field.getName())));
 								break;
 							default:
 								ObjectMapper ow = new ObjectMapper();
-								/*
+								
+								
 								try{
-									String json =ow.readValue(rs.getString(field.getName()),);
-									strValue="'"+json.toString()+"',";
+									Object x=ow.readValue(rs.getString(field.getName()), field.getType());
+									field.set(obj,x);
 								}catch (Exception e) {
-									strValue="'"+e.getMessage()+"',";
-									// TODO: handle exception
-								}*/
+									Out.Write(e.getMessage(), LogType.ERROR);
+								}
 								break;
 				        
-				        }
-						newlistOfRecords.add((T)obj);
+						 }
+						
 						
 					}
+					 newlistOfRecords.add((T)obj);
 			    }
 			}
 			
