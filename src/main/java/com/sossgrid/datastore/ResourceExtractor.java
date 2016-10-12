@@ -9,8 +9,9 @@ public class ResourceExtractor {
 		//These Should be Dynamic 
 		//ArrayList<HashMap<String,String>> conts=new ArrayList<HashMap<String,String>>(); 
 		HashMap<String,String> o=new HashMap<String,String>();
+		
 		o.put("server", "localhost");
-		o.put("database", "_"+Domain.replace('.', '-'));
+		o.put("database", "s_"+Domain.replace('.', '_'));
 		o.put("username", "root");
 		o.put("password", "sossgrid");
 		o.put("dataadapter", "com.sossgrid.mysql.MysqlConnector");
