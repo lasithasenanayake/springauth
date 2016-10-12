@@ -12,15 +12,13 @@ import com.sossgrid.log.Out.LogType;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 
 public class MysqlConnector implements IDataConnector{
 	private Connection con;
-	private HashMap<String,String> config;
+	//private HashMap<String,String> config;
 	
 	@Override
 	public void CreateConnection(HashMap<String, String> Configuration) throws Exception {
@@ -28,7 +26,7 @@ public class MysqlConnector implements IDataConnector{
 		try{
 		
 		 con=DriverManager.getConnection("jdbc:mysql://"+Configuration.get("server")+"/"+Configuration.get("database")+"?user="+Configuration.get("username")+"&password="+Configuration.get("password")+"");
-		 config=Configuration;
+		 //config=Configuration;
 		 
 		}catch(SQLException ex){
 			Out.Write(ex,LogType.ERROR);
