@@ -2,12 +2,20 @@ package com.sossgrid.authlib;
 
 import java.util.HashMap;
 
+import com.sossgrid.datastore.DataType;
+
 public class AuthCertificate {
+	@DataType(MaxLen=50)
 	private String userid;
+	@DataType(MaxLen=100)
 	private String email;
+	@DataType(MaxLen=100)
 	private String domain;
+	@DataType(IsPrimary=true,MaxLen=50)
 	private String token;
+	@DataType(MaxLen=10)
 	private String clientIP;
+	@DataType(MaxLen=5000)
 	private String jwt;
 	private HashMap<String,Object> otherdata;
 	//private Map.Entry<String,String> OtherData

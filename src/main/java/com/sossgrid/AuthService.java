@@ -5,10 +5,13 @@
  */
 package com.sossgrid;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.sql.rowset.serial.SerialException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Context;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.sossgrid.authlib.*;
+import com.sossgrid.common.DataFunction;
 import com.sossgrid.datastore.Connector;
 import com.sossgrid.datastore.DataStoreCommandType;
 import com.sossgrid.datastore.StatusMessage;
@@ -31,25 +35,47 @@ public class AuthService {
 	public @ResponseBody AuthCertificate Login(
 			@PathVariable String Email,
 			@PathVariable String Password,
-			@PathVariable String Domain) throws UnAutherizedException{
-		
-		if(Email.equals("admin") && Password.equals("admin")){
-			HashMap<String,Object> map=new HashMap<String,Object>();
-			map.put("JWT", "value");
-			AuthCertificate authc=new AuthCertificate("123", Email, Domain, "Token", "ClientIP","",map);
-			return authc;
-		}else{;
-			throw new UnAutherizedException("email or password Incorrect.");
+			@PathVariable String Domain,
+			@Context HttpServletRequest req) throws UnAutherizedException,ServiceException{
+		try{
+			Connector c=new Connector();
+			HashMap<String, Object> query=new HashMap<String, Object>();
+			query.put("email", Email);
+			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
+			if(users.size()==1){
+				if(users.get(0).getPassword().equals(Password)){
+					HashMap<String, Object> Otherdata =new HashMap<String,Object>();
+					String ClientIP = "0.0.0.0";
+					try {
+						ClientIP = req.getRemoteAddr();
+					} catch (Exception ignored){}
+					AuthHandler a =new AuthHandler(c);
+					return a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
+				}else{
+					throw new UnAutherizedException("email or password Incorrect.");
+				}
+			}else{
+				throw new UnAutherizedException("email or password Incorrect.");
+			}
+		}catch(Exception ex){
+			throw new ServiceException(ex.getMessage());
 		}
 	}
 	
 	//GetSession Represents validating security token or obtaining a new token for a specific domain
-	@RequestMapping(value="/getsession/{Token}/{Domain}")
+	@RequestMapping(value="/getsession/{Token}")
 	public @ResponseBody AuthCertificate GetSession(
-			@PathVariable String Token,
-			@PathVariable String Domain
-			) throws UnAutherizedException{
-		throw new UnAutherizedException("Not Implemented");
+			@PathVariable String Token
+			) throws UnAutherizedException,ServiceException{
+		try{
+			AuthHandler a =new AuthHandler();
+			return a.GetSession(Token);
+		}catch(UnAutherizedException e){
+			throw e;
+		}catch(Exception e){
+			throw new ServiceException(e.getMessage());
+		}
+		
 	}
 	
 	//CreateUser Represents Creation of the user 
@@ -65,7 +91,7 @@ public class AuthService {
 			query.put("email", User.getEmail());
 			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
 			if(users.size()==0){
-				User.setUserid(java.util.UUID.randomUUID().toString());
+				User.setUserid(DataFunction.GetGUID());
 				User.setEmail(User.getEmail().toLowerCase());
 				StatusMessage st= c.Store("users", User, DataStoreCommandType.InsertRecord);
 				if(!st.isError()){

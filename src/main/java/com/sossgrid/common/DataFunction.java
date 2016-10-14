@@ -9,4 +9,8 @@ public class DataFunction {
 		versionid=Long.parseLong(new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date()));
 		return versionid;
 	}
+	
+	public static String GetGUID(){
+		return java.util.UUID.randomUUID().toString().replace("-", "");
+	}
 }
