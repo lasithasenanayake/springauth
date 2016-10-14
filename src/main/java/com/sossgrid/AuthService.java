@@ -45,10 +45,9 @@ public class AuthService {
 			if(users.size()==1){
 				if(users.get(0).getPassword().equals(Password)){
 					HashMap<String, Object> Otherdata =new HashMap<String,Object>();
-					String ClientIP = "0.0.0.0";
-					try {
-						ClientIP = req.getRemoteAddr();
-					} catch (Exception ignored){}
+					
+					String	ClientIP = req.getRemoteAddr();
+					
 					AuthHandler a =new AuthHandler(c);
 					return a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
 				}else{
@@ -70,6 +69,29 @@ public class AuthService {
 		try{
 			AuthHandler a =new AuthHandler();
 			return a.GetSession(Token);
+		}catch(UnAutherizedException e){
+			throw e;
+		}catch(Exception e){
+			throw new ServiceException(e.getMessage());
+		}
+		
+	}
+	
+	@RequestMapping(value="/getsession/{Token}/{Domain}")
+	public @ResponseBody AuthCertificate GetSession(
+			@PathVariable String Token,
+			@PathVariable String Domain,
+			@Context HttpServletRequest req
+			) throws UnAutherizedException,ServiceException{
+		try{
+			AuthHandler a =new AuthHandler();
+			AuthCertificate auth=a.GetSession(Token);
+			if(auth.getDomain().equals(Domain.toLowerCase())){
+				return auth;
+			}else{
+				String	ClientIP = req.getRemoteAddr();
+				return a.CreateSession(auth, Domain, ClientIP);
+			}
 		}catch(UnAutherizedException e){
 			throw e;
 		}catch(Exception e){

@@ -27,7 +27,7 @@ public class AuthHandler {
 		if(AuthrizedDomain(Domain, User.getUserid())){
 		AuthCertificate session=new AuthCertificate(User.getUserid(), 
 				User.getEmail(), 
-				Domain, 
+				Domain.toLowerCase(), 
 				DataFunction.GetGUID(), 
 				ClientIP, 
 				"JWT-Comming Soon", 
@@ -48,6 +48,7 @@ public class AuthHandler {
 		if(AuthrizedDomain(Domain, authcertificate.getUserid())){
 			authcertificate.setToken(DataFunction.GetGUID());
 			authcertificate.setClientIP(ClientIP);
+			authcertificate.setDomain(Domain.toLowerCase());
 			c.Store("sessions", authcertificate, DataStoreCommandType.InsertRecord);
 			return authcertificate;
 		}else{
@@ -57,6 +58,7 @@ public class AuthHandler {
 	
 	public AuthCertificate GetSession(String Token) throws UnAutherizedException{
 		HashMap<String, Object> query=new HashMap<String, Object>();
+		query.put("token", Token);
 		ArrayList<AuthCertificate> sessions= c.<AuthCertificate>Retrive("sessions", query, AuthCertificate.class);
 		if(sessions.size()!=0){
 			return sessions.get(0);
