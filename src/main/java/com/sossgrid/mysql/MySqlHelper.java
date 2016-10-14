@@ -286,6 +286,7 @@ public class MySqlHelper {
 			Out.Write(e.getMessage(), LogType.ERROR);
 			Out.Write(e.getErrorCode(), LogType.ERROR);
 			String createSQl=GetCreateTableStatment(someObject,Name);
+			System.out.println(createSQl);
 			con.createStatement().executeUpdate(createSQl);
 		}
 		
@@ -397,12 +398,8 @@ public class MySqlHelper {
 							throw new Exception(field.getName() + " Primary key is not valied for type "+field.getType().getName() + " Length is too long "+ Integer.toString(datalength));
 						}
 					}
-					
-					datalength=getLength(field, dType.MaxLen());
-					
-				}else{
-					throw new Exception(field.getName() + " Primary key is not valied for type "+field.getType().getName());
 				}
+				datalength=getLength(field, dType.MaxLen());
 			}
 			
 			field.setAccessible(true); // You might want to set modifier to public first.

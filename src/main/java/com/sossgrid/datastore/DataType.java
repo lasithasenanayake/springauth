@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target(FIELD)
 public @interface DataType {
 	public String FieldName()  default "";
-	public int MinLen() default -1;
-	public int MaxLen() default -1;
+	public int MinLen() default 0;
+	public int MaxLen() default 0;
 	public boolean IsPrimary() default false;
 }
