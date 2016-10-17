@@ -10,10 +10,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.Context;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,7 +39,8 @@ public class AuthService {
 			@PathVariable String Email,
 			@PathVariable String Password,
 			@PathVariable String Domain,
-			@Context HttpServletRequest req) throws UnAutherizedException,ServiceException{
+			@Context HttpServletRequest req,
+			@Context HttpServletResponse response) throws UnAutherizedException,ServiceException{
 		try{
 			Connector c=new Connector();
 			HashMap<String, Object> query=new HashMap<String, Object>();
@@ -49,6 +53,12 @@ public class AuthService {
 					String	ClientIP = req.getRemoteAddr();
 					
 					AuthHandler a =new AuthHandler(c);
+					AuthCertificate authc=a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
+					Cookie cookie=new Cookie("sosskey", authc.getToken());
+					cookie.setPath("/");
+					cookie.setDomain(authc.getDomain());
+					response.addCookie(cookie);
+					
 					return a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
 				}else{
 					throw new UnAutherizedException("email or password Incorrect.");
@@ -76,6 +86,20 @@ public class AuthService {
 		}
 		
 	}
+	
+	//GetSession Represents validating security token or obtaining a new token for a specific domain
+		@RequestMapping(value="/getsession/")
+		public @ResponseBody AuthCertificate GetSession(@CookieValue("sosskey") String fooCookie,boolean test) throws UnAutherizedException,ServiceException{
+			try{
+				AuthHandler a =new AuthHandler();
+				return a.GetSession(fooCookie);
+			}catch(UnAutherizedException e){
+				throw e;
+			}catch(Exception e){
+				throw new ServiceException(e.getMessage());
+			}
+			
+		}
 	
 	@RequestMapping(value="/getsession/{Token}/{Domain}")
 	public @ResponseBody AuthCertificate GetSession(
