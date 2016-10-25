@@ -5,7 +5,6 @@
  */
 package com.sossgrid;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,20 +42,21 @@ public class AuthService {
 			@Context HttpServletResponse response) throws UnAutherizedException,ServiceException{
 		try{
 			Connector c=new Connector();
+			
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", Email);
 			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
 			if(users.size()==1){
 				if(users.get(0).getPassword().equals(Password)){
 					HashMap<String, Object> Otherdata =new HashMap<String,Object>();
-					
+					Otherdata.put("RequestDomain", req.getServerName());
 					String	ClientIP = req.getRemoteAddr();
 					
 					AuthHandler a =new AuthHandler(c);
 					AuthCertificate authc=a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
 					Cookie cookie=new Cookie("sosskey", authc.getToken());
 					cookie.setPath("/");
-					cookie.setDomain(authc.getDomain());
+					//cookie.setDomain(authc.getDomain());
 					response.addCookie(cookie);
 					
 					return a.CreateSession(users.get(0), Domain, ClientIP, Otherdata);
@@ -152,6 +152,23 @@ public class AuthService {
 			throw new ServiceException(ex.getMessage());
 		}
 		
+	}
+	
+	@RequestMapping(value="/resetpassword/{oldpassword}/{newpassword}")
+	public @ResponseBody boolean ResetPassword(
+			@PathVariable String oldpassword,
+			@PathVariable String newpassword,
+			@PathVariable String confirmpassword,
+			@CookieValue("sosskey") String sossCookie
+			) throws UnAutherizedException,ServiceException{
+		try{
+			AuthHandler a =new AuthHandler();
+			AuthCertificate auth=a.GetSession(sossCookie);
+			
+			return false;
+		}catch(Exception e){
+			throw new ServiceException(e.getMessage());
+		}
 	}
 	
 

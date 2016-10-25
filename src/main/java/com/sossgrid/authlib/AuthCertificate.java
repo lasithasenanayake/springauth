@@ -13,7 +13,7 @@ public class AuthCertificate {
 	private String domain;
 	@DataType(IsPrimary=true,MaxLen=50)
 	private String token;
-	@DataType(MaxLen=10)
+	@DataType(MaxLen=30)
 	private String clientIP;
 	@DataType(MaxLen=5000)
 	private String jwt;

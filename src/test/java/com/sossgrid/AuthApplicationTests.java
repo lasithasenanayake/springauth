@@ -34,6 +34,7 @@ public class AuthApplicationTests {
 
 	@Test
 	public void contextLoads() {
+		/*
 		HashMap<String,Object> map=new HashMap<String,Object>();
 		map.put("JWT", "value");
 		AuthCertificate authc=new AuthCertificate("123", "Email", "Domain", "Token", "ClientIP","",map);
@@ -66,11 +67,12 @@ public class AuthApplicationTests {
 		System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(myDate));
 		System.out.println(myDate);
 		//System.out.println(mytest.DateConvertSqlString(new java.util.Date()));
+		*/
 	}
 	
 	@Test 
 	public void TestMySqlComponetInsertCreateNewTable() throws Exception{
-		HashMap<String,String> o=new HashMap<String,String>();
+		/*HashMap<String,String> o=new HashMap<String,String>();
 		o.put("server", "localhost");
 		o.put("database", "supun");
 		o.put("username", "root");
@@ -103,6 +105,7 @@ public class AuthApplicationTests {
 		//assertEquals(t.get(0).getDateTime().getYear(), testobj.getDateTime().getYear());
 		assertEquals(t.get(0).getComplexobject().getDomain(), t.get(0).getComplexobject().getDomain());
 		 //newlistOfRecords.add((T)obj);
+		*/
 	}
 	
 	
