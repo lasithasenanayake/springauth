@@ -1,7 +1,10 @@
 package com.sossgrid;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
@@ -10,6 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sossgrid.datacore.*;
 
 @Controller
@@ -74,11 +81,16 @@ public class DataService {
 			namespace = nsAndClass.substring(0, lIndex);
 			className = nsAndClass.substring(lIndex);			
 		}
+		
 		 
 		dataCommand.setNamespace(namespace);
 		dataCommand.setClassName(className);
 		dataCommand.setTenantId(tenantId);
 		dataCommand.setHeaders(headers);
+		
+		if (!method.equals("GET"))
+			dataCommand.setBody(this.getRequestBody(request));
+		
 		
 		switch (method){
 			case "GET":
@@ -130,6 +142,25 @@ public class DataService {
 		}
 
 		return dataCommand;
+	}
+	
+	private HashMap<String,Object> getRequestBody(HttpServletRequest request){
+		try {
+
+			ObjectMapper mapper = new ObjectMapper();
+
+			String postBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+			HashMap<String, Object> map = mapper.readValue(postBody, new TypeReference<HashMap<String, String>>(){});
+			return map;
+
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 }
