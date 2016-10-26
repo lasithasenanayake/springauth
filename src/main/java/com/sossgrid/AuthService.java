@@ -88,8 +88,8 @@ public class AuthService {
 	}
 	
 	//GetSession Represents validating security token or obtaining a new token for a specific domain
-		@RequestMapping(value="/getsession/")
-		public @ResponseBody AuthCertificate GetSession(@CookieValue("sosskey") String fooCookie,boolean test) throws UnAutherizedException,ServiceException{
+	@RequestMapping(value="/getsession/")
+	public @ResponseBody AuthCertificate GetSessionWithCookie(@CookieValue("sosskey") String fooCookie) throws UnAutherizedException,ServiceException{
 			try{
 				AuthHandler a =new AuthHandler();
 				return a.GetSession(fooCookie);
@@ -97,9 +97,17 @@ public class AuthService {
 				throw e;
 			}catch(Exception e){
 				throw new ServiceException(e.getMessage());
-			}
-			
-		}
+			}		
+	}
+	
+	@RequestMapping(value="/social/{authmode}/{token}")
+	public @ResponseBody AuthCertificate GetSocialAuth(
+			@PathVariable String authmode,
+			@PathVariable String token
+			){
+		
+		return null;
+	}
 	
 	@RequestMapping(value="/getsession/{Token}/{Domain}")
 	public @ResponseBody AuthCertificate GetSession(
