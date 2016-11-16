@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.sossgrid.authlib.*;
 import com.sossgrid.common.DataFunction;
-import com.sossgrid.datastore.Connector;
-import com.sossgrid.datastore.DataStoreCommandType;
-import com.sossgrid.datastore.StatusMessage;
+import com.sossgrid.datastore.SOSStore;
+import com.sossgrid.datastore.StoreOperation;
+import com.sossgrid.datastore.DataResponse;
 import com.sossgrid.exceptions.ServiceException;
 import com.sossgrid.exceptions.UnAutherizedException;
 
@@ -41,7 +41,7 @@ public class AuthService {
 			@Context HttpServletRequest req,
 			@Context HttpServletResponse response) throws UnAutherizedException,ServiceException{
 		try{
-			Connector c=new Connector();
+			SOSStore c=new SOSStore();
 			
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", Email);
@@ -140,18 +140,18 @@ public class AuthService {
 		
 		//UserProfile u=new UserProfile(User.getUserid())
 		try{
-			Connector c=new Connector();
+			SOSStore c=new SOSStore();
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", User.getEmail());
 			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
 			if(users.size()==0){
 				User.setUserid(DataFunction.GetGUID());
 				User.setEmail(User.getEmail().toLowerCase());
-				StatusMessage st= c.Store("users", User, DataStoreCommandType.InsertRecord);
-				if(!st.isError()){
+				DataResponse st= c.Store("users", User, StoreOperation.InsertRecord);
+				if(st.isSuccess()){
 					return User;
 				}else{
-					throw new ServiceException(st.getMessage());
+					throw st.getError();
 				}
 			}else{
 				throw new ServiceException("Already User Registered");

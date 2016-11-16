@@ -1,0 +1,11 @@
+{
+  "userid" : "123",
+  "email" : "Email",
+  "domain" : "Domain",
+  "token" : "Token",
+  "clientIP" : "ClientIP",
+  "jwt" : "",
+  "otherData" : {
+    "JWT" : "value"
+  }
+}

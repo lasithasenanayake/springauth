@@ -15,8 +15,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.mysql.jdbc.log.Log;
 import com.sossgrid.authlib.AuthCertificate;
-import com.sossgrid.datastore.DataStoreCommandType;
-import com.sossgrid.datastore.StatusMessage;
+import com.sossgrid.datastore.StoreOperation;
+import com.sossgrid.datastore.Schema;
+import com.sossgrid.datastore.DataResponse;
 import com.sossgrid.file.Store;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
@@ -34,7 +35,6 @@ public class AuthApplicationTests {
 
 	@Test
 	public void contextLoads() {
-		/*
 		HashMap<String,Object> map=new HashMap<String,Object>();
 		map.put("JWT", "value");
 		AuthCertificate authc=new AuthCertificate("123", "Email", "Domain", "Token", "ClientIP","",map);
@@ -67,12 +67,11 @@ public class AuthApplicationTests {
 		System.out.println(new SimpleDateFormat("yyyyMMddHHmmss").format(myDate));
 		System.out.println(myDate);
 		//System.out.println(mytest.DateConvertSqlString(new java.util.Date()));
-		*/
 	}
 	
 	@Test 
 	public void TestMySqlComponetInsertCreateNewTable() throws Exception{
-		/*HashMap<String,String> o=new HashMap<String,String>();
+		HashMap<String,String> o=new HashMap<String,String>();
 		o.put("server", "localhost");
 		o.put("database", "supun");
 		o.put("username", "root");
@@ -85,9 +84,9 @@ public class AuthApplicationTests {
 		testobj.setBooleanvalue(true);
 		testobj.setName(new SimpleDateFormat("yyyyMMddHHmmss").format(new java.util.Date()));
 		testobj.setDateTime(new java.util.Date());
-		StatusMessage st=mysql.Store(TableName, testobj,DataStoreCommandType.InsertRecord);
-		System.out.println(st.getMessage());
-		assertEquals(st.isError(), false);
+		DataResponse st=mysql.Store(TableName, testobj,StoreOperation.InsertRecord, new Schema(testobj.getClass()));
+		System.out.println(st.getResponse());
+		assertEquals(st.isSuccess(),true);
 		
 		
 		testobj.setDoublevalue(200);
@@ -95,17 +94,16 @@ public class AuthApplicationTests {
 		map.put("JWT", "value");
 		AuthCertificate authc=new AuthCertificate("123", "Email", "Domain", "Token", "ClientIP","",map);
 		testobj.setComplexobject(authc);
-		st=mysql.Store(TableName, testobj, DataStoreCommandType.UpdateRecord);
-		assertEquals(st.isError(), false);
+		st=mysql.Store(TableName, testobj, StoreOperation.UpdateRecord, new Schema(testobj.getClass()));
+		assertEquals(st.isSuccess(), true);
 		
-		ArrayList<TestObject> t= mysql.<TestObject>Retrive(TableName, new HashMap<String,Object>(), TestObject.class);
+		ArrayList<TestObject> t= mysql.<TestObject>Retrive(TableName, new HashMap<String,Object>(), TestObject.class, new Schema(testobj.getClass()));
 		assertEquals(t.size(), 1);
 		
 		assertEquals(t.get(0).getName(), testobj.getName());
 		//assertEquals(t.get(0).getDateTime().getYear(), testobj.getDateTime().getYear());
 		assertEquals(t.get(0).getComplexobject().getDomain(), t.get(0).getComplexobject().getDomain());
 		 //newlistOfRecords.add((T)obj);
-		*/
 	}
 	
 	

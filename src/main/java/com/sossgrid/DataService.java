@@ -17,7 +17,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sossgrid.datacore.*;
+import com.sossgrid.datastore.*;
 
 @Controller
 @RequestMapping(value="*")
@@ -30,12 +30,16 @@ public class DataService {
 
 	private DataResponse processRequest(HttpServletRequest request){
 		DataCommand sendCommand = getDataCommand(request);
-			
+
 		if (sendCommand.isValid()){
-			RequestInfo reqInfo = new RequestInfo(sendCommand);
-			return DataServiceManager.Process(reqInfo);			
+			DataRequest reqInfo = new DataRequest(sendCommand);
+			try {
+				return (new DataProcessor(reqInfo)).Process();
+			} catch (Exception e) {
+				return DataProcessor.SendError(e);	
+			}			
 		}else{
-			return DataServiceManager.SendError(sendCommand.getErrorMessage());
+			return DataProcessor.SendError(sendCommand.getErrorMessage());
 		}
 	}
 	
@@ -58,45 +62,50 @@ public class DataService {
 			dataCommand.setErrorMessage("Classname not entered");
 		}
 		
-		if (qString !=null){
-			String[] keyVals = qString.split("&");
-			
-			for (String kv : keyVals){
-				if (kv.contains("=")){
-					String[] tmpSplit = kv.split("=");
-					headers.put(tmpSplit[0], tmpSplit[1]);
-				}else headers.put(kv, null);
+		if (dataCommand.isValid()){
+			if (qString !=null){
+				String[] keyVals = qString.split("&");
+				
+				for (String kv : keyVals){
+					if (kv.contains("=")){
+						String[] tmpSplit = kv.split("=");
+						headers.put(tmpSplit[0], tmpSplit[1]);
+					}else headers.put(kv, null);
+				}
 			}
+			
+			String namespace;
+			String className;
+			
+			int lIndex = nsAndClass.lastIndexOf('.');
+			
+			if (lIndex == -1){
+				namespace = tenantId;
+				className = nsAndClass;
+			}else{
+				namespace = nsAndClass.substring(0, lIndex);
+				className = nsAndClass.substring(lIndex);			
+			}
+			
+			 
+			dataCommand.setNamespace(namespace);
+			dataCommand.setClassName(className);
+			dataCommand.setTenantId(tenantId);
+			dataCommand.setHeaders(headers);
+			
+			if (!method.equals("GET"))
+				dataCommand.setBody(this.getRequestBody(request));
+			else 
+				dataCommand.setBody(new HashMap<String,Object>());
+			
+			dataCommand.loadSchema();
 		}
-		
-		String namespace;
-		String className;
-		
-		int lIndex = nsAndClass.lastIndexOf('.');
-		
-		if (lIndex == -1){
-			namespace = tenantId;
-			className = nsAndClass;
-		}else{
-			namespace = nsAndClass.substring(0, lIndex);
-			className = nsAndClass.substring(lIndex);			
-		}
-		
-		 
-		dataCommand.setNamespace(namespace);
-		dataCommand.setClassName(className);
-		dataCommand.setTenantId(tenantId);
-		dataCommand.setHeaders(headers);
-		
-		if (!method.equals("GET"))
-			dataCommand.setBody(this.getRequestBody(request));
-		
 		
 		switch (method){
 			case "GET":
-				if (qString ==null)
+				if (qString ==null){
 					dataCommand.setOperation(DataOperation.Get);
-				else {
+				}else {
 					if (headers.containsKey("schema"))
 						dataCommand.setOperation(DataOperation.GetSchema);
 				}
@@ -146,11 +155,12 @@ public class DataService {
 	
 	private HashMap<String,Object> getRequestBody(HttpServletRequest request){
 		try {
-
 			ObjectMapper mapper = new ObjectMapper();
-
 			String postBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-			HashMap<String, Object> map = mapper.readValue(postBody, new TypeReference<HashMap<String, String>>(){});
+
+		    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+
+            HashMap<String,Object> map = mapper.readValue(postBody, typeRef); 
 			return map;
 
 		} catch (JsonGenerationException e) {
@@ -160,7 +170,7 @@ public class DataService {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return new HashMap<String,Object>();
 	}
 	
 }
