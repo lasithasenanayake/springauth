@@ -6,9 +6,16 @@
 package com.sossgrid;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -23,14 +30,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.sossgrid.authlib.*;
 import com.sossgrid.common.DataFunction;
-import com.sossgrid.datastore.Connector;
-import com.sossgrid.datastore.DataStoreCommandType;
-import com.sossgrid.datastore.StatusMessage;
+import com.sossgrid.datastore.SossData;
+import com.sossgrid.datastore.StoreOperation;
+import com.sossgrid.datastore.DataResponse;
 import com.sossgrid.exceptions.ServiceException;
 import com.sossgrid.exceptions.UnAutherizedException;
 
 @Controller
-public class AuthService {
+public class AuthService implements Filter  {
 	
 	//Login Represents Authenticating users 
 	@RequestMapping(value="/login/{Email}/{Password}/{Domain}")
@@ -41,7 +48,7 @@ public class AuthService {
 			@Context HttpServletRequest req,
 			@Context HttpServletResponse response) throws UnAutherizedException,ServiceException{
 		try{
-			Connector c=new Connector();
+			SossData c=new SossData();
 			
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", Email);
@@ -140,18 +147,18 @@ public class AuthService {
 		
 		//UserProfile u=new UserProfile(User.getUserid())
 		try{
-			Connector c=new Connector();
+			SossData c=new SossData();
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", User.getEmail());
 			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
 			if(users.size()==0){
 				User.setUserid(DataFunction.GetGUID());
 				User.setEmail(User.getEmail().toLowerCase());
-				StatusMessage st= c.Store("users", User, DataStoreCommandType.InsertRecord);
-				if(!st.isError()){
+				DataResponse st= c.Store("users", User, StoreOperation.InsertRecord);
+				if(st.isSuccess()){
 					return User;
 				}else{
-					throw new ServiceException(st.getMessage());
+					throw st.getError();
 				}
 			}else{
 				throw new ServiceException("Already User Registered");
@@ -186,5 +193,33 @@ public class AuthService {
 			@PathVariable String Token
 			) throws UnAutherizedException{
 		throw new UnAutherizedException("Not Implemented");
+	}
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+			throws IOException, ServletException {
+		// TODO Auto-generated method stub
+		 HttpServletRequest request = (HttpServletRequest) req;
+		    HttpServletResponse response = (HttpServletResponse) res;
+
+		    response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
+		    response.setHeader("Access-Control-Allow-Credentials", "true");
+		    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+		    response.setHeader("Access-Control-Max-Age", "3600");
+		    response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
+
+		    chain.doFilter(req, res);
+	}
+
+	@Override
+	public void destroy() {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -3,7 +3,7 @@ package com.sossgrid.mysql;
 import java.util.Date;
 
 import com.sossgrid.authlib.AuthCertificate;
-import com.sossgrid.datastore.DataType;
+import com.sossgrid.datastore.annotations.DataType;
 
 public class TestObject {
 	

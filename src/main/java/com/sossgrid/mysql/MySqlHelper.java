@@ -11,8 +11,14 @@ import java.util.HashMap;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sossgrid.datastore.DataStoreCommandType;
-import com.sossgrid.datastore.DataType;
+import com.sossgrid.datastore.DataCommand;
+import com.sossgrid.datastore.DataRequest;
+import com.sossgrid.datastore.ObjectWrapper;
+import com.sossgrid.datastore.Schema;
+import com.sossgrid.datastore.SchemaAnnotation;
+import com.sossgrid.datastore.SchemaField;
+import com.sossgrid.datastore.StoreOperation;
+import com.sossgrid.datastore.annotations.DataType;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
 
@@ -41,9 +47,11 @@ public class MySqlHelper {
 			case "long":
 				strValue=value.toString()+"";
 				break;
+			case "class java.lang.String":
 			case "java.lang.String":
 				strValue="'"+value.toString()+"'";
 				break;
+			case "class java.util.Date":
 			case "java.util.Date":
 				SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 				strValue= "STR_TO_DATE('"+formatter.format((java.util.Date)value)+"','%m-%d-%Y %H:%i:%s')";
@@ -66,34 +74,30 @@ public class MySqlHelper {
 		return strValue;
 	}
 	
-	public static String GetInsert(Object someObject,String Name){
+	public static String GetInsert(DataRequest request){
+		DataCommand command = request.getDataCommand();
+		ObjectWrapper someObject = command.getStorageObject();
 		
-		
-		String strSql="Insert Into "+ Name;
+		String strSql="Insert Into "+ command.getClassName();
 		String strColumn="(";
 		String strValues="Values(";
 		System.out.println(someObject);
-		for (Field field : someObject.getClass().getDeclaredFields()) {
+		for (SchemaField field : command.getSchema().GetAll()) {
 			//field.getAnnotations()
-		    field.setAccessible(true); // You might want to set modifier to public first.
 		    Object value;
 			try {
 				//System.out.println(field.getName() + "=" + "value" + " type " +field.getType().getName());
-				value = field.get(someObject);
-				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
+				value = someObject.getValue(field.getName());
+				System.out.println(field.getName() + "=" + value + " type " +field.getType());
 				strColumn+=field.getName()+",";
-			    strValues+=GenerateValueParam(field.getType().getName(),value)+",";    		    
+			    strValues+=GenerateValueParam(field.getType(),value)+",";    		    
 				
 				
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				request.setError(e);
 			} 
-			
-		    
 		}
 		strColumn=strColumn+"sysversionid)  ";
 		Out.Write(strValues, LogType.DEBUG);
@@ -102,49 +106,40 @@ public class MySqlHelper {
 		return strSql + strColumn + strValues;
 	}
 	
-	public static String GetUpdate(Object someObject,String Name){
+	public static String GetUpdate(DataRequest request){
+		DataCommand command = request.getDataCommand();
+		ObjectWrapper storeObject = command.getStorageObject();
+		//Object someObject,String Name
 		
-		
-		String strSql="Update "+ Name + " SET ";
+		String strSql="Update "+ command.getClassName() + " SET ";
 		String strColumn="";
 		String strWhere=" Where ";
-		System.out.println(someObject);
-		for (Field field : someObject.getClass().getDeclaredFields()) {
-			//field.getAnnotations()
-		    field.setAccessible(true); // You might want to set modifier to public first.
+		Schema schema = command.getSchema();
+		
+		for (SchemaField field : schema.GetAll()) {
 		    Object value;
 			try {
-				Annotation[] annotations = field.getAnnotations();
-				DataType dType = null;
+				
 				boolean isprimary=false;
 				int datalength=0;
-				for (Annotation a : annotations){
-					Out.Write(a.annotationType().getName(), LogType.DEBUG);
-					if (a.annotationType().getName().equals("com.sossgrid.datastore.DataType")){
-						dType = (DataType)a;
-						break;
-					}
-				}
+				SchemaAnnotation dType = field.getAnnotations();
 				
 				if (dType !=null){
-					isprimary=dType.IsPrimary();
+					isprimary=((SchemaAnnotation)dType).isPrimary();
 				}
 				
-				value = field.get(someObject);
-				System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
+				value = storeObject.getValue(field.getName());
+				System.out.println(field.getName() + "=" + value + " type " +field.getType());
 				if(!isprimary){
-					strColumn+=field.getName()+"="+GenerateValueParam(field.getType().getName(),value)+",";
+					strColumn+=field.getName()+"="+GenerateValueParam(field.getType(),value)+",";
 				}else{
-					String strval =GenerateValueParam(field.getType().getName(),value);
+					String strval =GenerateValueParam(field.getType(),value);
 					strval=strval;
 					strWhere+=field.getName()+"="+strval + " and ";
 				}
 				
 				
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
@@ -159,17 +154,23 @@ public class MySqlHelper {
 		return strSql + strColumn + strWhere;
 	}
 	
-	public static String GetSelect(String Name, HashMap<String, Object> QueryField){
-		String strSelect ="Select * from "+Name;
+	public static String GetSelect(DataRequest request){
+		DataCommand command = request.getDataCommand();
+		HashMap<String, Object> requestBody = command.getBody();
+		
+		String strSelect ="Select * from "+command.getClassName();
 		boolean first=true;
-		for(Entry<String, Object> entry : QueryField.entrySet()) {
-		    String key = entry.getKey();
-		    if(first){
-		    	strSelect+=" Where "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
-		    }else{
-		    	strSelect+=" and "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
-		    }
+		HashMap<String,Object> queryParams = (HashMap<String,Object>)requestBody.get("queryParams");
+		
+		if (queryParams !=null)
+			for(Entry<String, Object> entry : queryParams.entrySet()) {
+			    if(first){
+			    	strSelect+=" Where "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
+			    }else{
+			    	strSelect+=" and "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
+			    }
 		}
+		
 		Out.Write(strSelect,LogType.DEBUG);
 		return strSelect;
 		
@@ -253,7 +254,10 @@ public class MySqlHelper {
 				strValue="LONG "+((isNull)?"":"NOT")+" NULL,";
 				break;
 			case "java.lang.String":
-				if(datalength<3072){
+				if(datalength==0){
+					strValue="TEXT "+((isNull)?"":"NOT")+" NULL,";
+				}
+				else if(datalength<3072){
 					strValue="VARCHAR("+Integer.toString(datalength)+") "+((isNull)?"":"NOT")+" NULL,";
 				}else{
 					strValue="TEXT "+((isNull)?"":"NOT")+" NULL,";
@@ -273,10 +277,12 @@ public class MySqlHelper {
 		return strValue;
 	}
 	
-	public static void GenerateTable(Object someObject,String Name,Connection con) throws SQLException,Exception{
+	public static void GenerateTable(DataRequest request,Connection con) throws SQLException,Exception{
+		//Object someObject
+		//String Name
 		
 		try {
-			ResultSet rs =con.prepareStatement("Select * from "+Name+" limit 0,0;").executeQuery();
+			ResultSet rs =con.prepareStatement("Select * from "+request.getDataCommand().getClassName()+" limit 0,0;").executeQuery();
 			ResultSetMetaData mdata=rs.getMetaData();
 			//Alter Table script
 			
@@ -285,7 +291,7 @@ public class MySqlHelper {
 		} catch (SQLException e) {
 			Out.Write(e.getMessage(), LogType.ERROR);
 			Out.Write(e.getErrorCode(), LogType.ERROR);
-			String createSQl=GetCreateTableStatment(someObject,Name);
+			String createSQl=GetCreateTableStatment(request);
 			System.out.println(createSQl);
 			con.createStatement().executeUpdate(createSQl);
 		}
@@ -293,8 +299,8 @@ public class MySqlHelper {
 		//return strSql + strColumn;
 	}
 	
-	public static Boolean isPrimaryOK(Field field){
-		switch(field.getType().getName()){
+	public static Boolean isPrimaryOK(SchemaField field){
+		switch(field.getType()){
 			case "int":
 				return true;
 				
@@ -329,8 +335,8 @@ public class MySqlHelper {
 		
 	}
 	
-	public static int getLength(Field field,int length){
-		switch(field.getType().getName()){
+	public static int getLength(SchemaField field,int length){
+		switch(field.getType()){
 			case "int":
 				return 0;
 				
@@ -369,42 +375,37 @@ public class MySqlHelper {
 		
 	}
 	
-	public static String GetCreateTableStatment(Object someObject,String Name) throws Exception{
-		String strSql="Create Table "+ Name;
+	public static String GetCreateTableStatment(DataRequest request) throws Exception{
+		//Object someObject,String Name
+		DataCommand command = request.getDataCommand();
+		Schema schema = command.getSchema();
+		
+		String strSql="Create Table "+ command.getClassName();
 		String strColumn="(";
 		String strPrimaryKeys="PRIMARY KEY (";
 		//String strValues="Values(";
-		System.out.println(someObject);
-		for (Field field : someObject.getClass().getDeclaredFields()) {
+		for (SchemaField field : schema.GetAll()) {
 			boolean isNull=true;
-			Annotation[] annotations = field.getAnnotations();
-			DataType dType = null;
+
+			SchemaAnnotation annotation = field.getAnnotations();
 			int datalength=0;
-			for (Annotation a : annotations){
-				Out.Write(a.annotationType().getName(), LogType.DEBUG);
-				if (a.annotationType().getName().equals("com.sossgrid.datastore.DataType")){
-					dType = (DataType)a;
-					break;
-				}
-			}
 			
-			if (dType !=null){
-				if(dType.IsPrimary()){
+			if (annotation !=null){ 
+				if(annotation.isPrimary()){
 					if(isPrimaryOK(field)){
-						if(dType.MaxLen()<255){
+						if(annotation.getMaxLen()<255){
 							strPrimaryKeys+=field.getName()+",";
 							isNull=false;
 						}else{
-							throw new Exception(field.getName() + " Primary key is not valied for type "+field.getType().getName() + " Length is too long "+ Integer.toString(datalength));
+							throw new Exception(field.getName() + " Primary key is not valied for type "+field.getType() + " Length is too long "+ Integer.toString(datalength));
 						}
 					}
 				}
-				datalength=getLength(field, dType.MaxLen());
+				datalength=getLength(field, annotation.getMaxLen());
 			}
 			
-			field.setAccessible(true); // You might want to set modifier to public first.
 			try {
-				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType().getName(),datalength,isNull);    		    
+				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType(),datalength,isNull);    		    
 				
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block

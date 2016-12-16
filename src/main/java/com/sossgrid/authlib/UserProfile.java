@@ -2,7 +2,7 @@ package com.sossgrid.authlib;
 
 import java.util.HashMap;
 
-import com.sossgrid.datastore.DataType;
+import com.sossgrid.datastore.annotations.DataType;
 
 public class UserProfile {
 	@DataType(IsPrimary=true,MaxLen=50)

@@ -5,12 +5,11 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sossgrid.datastore.*;
-import com.sossgrid.datastore.IDataConnector;
-import com.sossgrid.datastore.StatusMessage;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
 
 import java.lang.reflect.Field;
+import java.rmi.activation.ActivationGroupDesc.CommandEnvironment;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -24,10 +23,9 @@ public class MysqlConnector implements IDataConnector{
 	public void CreateConnection(HashMap<String, String> Configuration) throws Exception {
 		// TODO Auto-generated method stub
 		try{
-		
-		 con=DriverManager.getConnection("jdbc:mysql://"+Configuration.get("server")+"/"+Configuration.get("database")+"?user="+Configuration.get("username")+"&password="+Configuration.get("password")+"");
-		 //config=Configuration;
-		 
+			Class.forName("com.mysql.jdbc.Driver");
+			con=DriverManager.getConnection("jdbc:mysql://"+Configuration.get("server")+"/"+Configuration.get("database")+"?user="+Configuration.get("username")+"&password="+Configuration.get("password")+"");
+			//config=Configuration;
 		}catch(SQLException ex){
 			Out.Write(ex,LogType.ERROR);
 			Out.Write(ex.getErrorCode(),LogType.ERROR);
@@ -52,17 +50,18 @@ public class MysqlConnector implements IDataConnector{
 	}
 
 	@Override
-	public StatusMessage Store(String Name, Object Obj,DataStoreCommandType commadtype) {
-		StatusMessage status;
+	public DataResponse Store(DataRequest request,StoreOperation commadtype) {
+		DataResponse status;
+		DataCommand command = request.getDataCommand();
 		
 		switch(commadtype){
 		case InsertRecord:
 			if(isDbConnected()){
-				String insertSQL=MySqlHelper.GetInsert(Obj, Name);
+				String insertSQL=MySqlHelper.GetInsert(request);
 				try {
 					con.createStatement().executeUpdate(insertSQL);
 					//insertStatment.executeQuery();
-					status=new StatusMessage(false,"", Obj);
+					status=new DataResponse(command.getStorageObject().getRaw());
 					return status;
 				} catch (SQLException e) {
 					Out.Write(e.getErrorCode(), LogType.ERROR);
@@ -71,20 +70,20 @@ public class MysqlConnector implements IDataConnector{
 					if(e.getErrorCode()==1146){
 						try {
 							Out.Write("Creating or altering table", LogType.DEBUG);
-							MySqlHelper.GenerateTable(Obj, Name, con);
+							MySqlHelper.GenerateTable(request, con);
 							Out.Write("Retry SQL command.", LogType.DEBUG);
-							Store(Name,Obj,commadtype);
-							status=new StatusMessage(false,"", Obj);
+							Store(request,commadtype);
+							status=new DataResponse(command.getStorageObject().getRaw());
 							return status;
 							
 						} catch (SQLException e1) {
 							// TODO Auto-generated catch block
-							status =new StatusMessage(true, e1.getMessage(), Obj);
+							status =new DataResponse(e1);
 							return status;
 							
 						}catch (Exception e2) {
 							// TODO: handle exception
-							status =new StatusMessage(true, e2.getMessage(), Obj);
+							status =new DataResponse(e2);
 							return status;
 						}
 					}
@@ -93,10 +92,10 @@ public class MysqlConnector implements IDataConnector{
 			}
 			break;
 		case UpdateRecord:
-			String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
+			String updateSQL =MySqlHelper.GetUpdate(request);
 			try {
 				con.createStatement().executeUpdate(updateSQL);
-				status=new StatusMessage(false,"", Obj);
+				status=new DataResponse(command.getStorageObject().getRaw());
 				return status;
 			} catch (SQLException e) {
 				Out.Write(e.getErrorCode(), LogType.ERROR);
@@ -104,26 +103,26 @@ public class MysqlConnector implements IDataConnector{
 				//e.printStackTrace();
 				try {
 					Out.Write("Creating or altering table", LogType.DEBUG);
-					MySqlHelper.GenerateTable(Obj, Name, con);
+					MySqlHelper.GenerateTable(request, con);
 					Out.Write("Retry SQL command.", LogType.DEBUG);
-					Store(Name,Obj,commadtype);
-					status=new StatusMessage(false,"", Obj);
+					Store(request,commadtype);
+					status=new DataResponse(command.getStorageObject().getRaw());
 					return status;
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
-					status =new StatusMessage(true, e1.getMessage(), Obj);
+					status =new DataResponse(e1);
 					return status;
 					
 				}catch (Exception e2) {
 					// TODO: handle exception
-					status =new StatusMessage(true, e2.getMessage(), Obj);
+					status =new DataResponse(e2);
 					return status;
 				}
 			}
 			//break;
 		
 		}
-		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
+		status =new DataResponse(new Exception("Error Database Conenection is not established"));
 		return status;
 	}
 	
@@ -142,101 +141,106 @@ public class MysqlConnector implements IDataConnector{
 	}
 
 	@Override
-	public StatusMessage[] Store(String Name, Object[] Objs) {
+	public DataResponse[] Store(DataRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public StatusMessage Delete(String Name, Object Obj) {
-		StatusMessage status;
-		String updateSQL =MySqlHelper.GetUpdate(Obj, Name);
+	public DataResponse Delete(DataRequest request) {
+		DataResponse status;
+		DataCommand command = request.getDataCommand();
+		String updateSQL =MySqlHelper.GetUpdate(request);
 		try {
 			con.createStatement().executeUpdate(updateSQL);
-			status=new StatusMessage(false,"", Obj);
+			status=new DataResponse(command.getStorageObject().getRaw());
 			return status;
 		} catch (SQLException e) {
 			Out.Write(e.getErrorCode(), LogType.ERROR);
 			Out.Write(e.getMessage(), LogType.ERROR);
 		}
 		
-		status =new StatusMessage(true, "Error Database Conenection is not established", Obj);
+		
+		status =new DataResponse(new Exception("Error Database Conenection is not established"));
 		return status;
 		
 	}
 
 	@Override
-	public StatusMessage[] Delete(String Name, Object[] Objs) {
+	public DataResponse[] Delete(String Name, Object[] Objs) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public <T> ArrayList<T> Retrive(String Name, HashMap<String, Object> QueryField,Class<T> c) {
-		// TODO Auto-generated method stub
+	public <T> ArrayList<T> Retrive(DataRequest request,Class<T> c) {
+		DataCommand command = request.getDataCommand();
 		ArrayList<T> newlistOfRecords =new ArrayList<T>();
 		
 		try {
 			if(isDbConnected()){
 				
-				ResultSet rs=con.prepareStatement(MySqlHelper.GetSelect(Name, QueryField)).executeQuery();
+				ResultSet rs=con.prepareStatement(MySqlHelper.GetSelect(request)).executeQuery();
 				while (rs.next()) {
-					Object obj=c.newInstance();
+					ObjectWrapper obj = request.getDataCommand().newStorageObject();
 					
-					for (Field field : c.getDeclaredFields()) {
-						field.setAccessible(true);
+					
+					for (SchemaField field : command.getSchema().GetAll()) {
 						Out.Write(rs.getString(field.getName()), LogType.DEBUG);
-						 switch(field.getType().getName()){
+						 switch(field.getType()){
 							case "int":
-								field.setInt(obj, rs.getInt(field.getName()));
+								obj.setValue(field.getName(), rs.getInt(field.getName()));
 								break;
 							case "float":
-								field.setFloat(obj, rs.getFloat(field.getName()));
+								obj.setValue(field.getName(), rs.getFloat(field.getName()));
 								break;
 							case "double":
-								field.setDouble(obj, rs.getDouble(field.getName()));
+								obj.setValue(field.getName(), rs.getDouble(field.getName()));
 								break;
 							case "short":
-								field.setShort(obj, rs.getShort(field.getName()));
+								obj.setValue(field.getName(), rs.getShort(field.getName()));
 								break;
 							case "long":
-								field.setLong(obj, rs.getLong(field.getName()));
+								obj.setValue(field.getName(), rs.getString(field.getName()));
 								break;
+							case "class java.lang.String":
 							case "java.lang.String":
-								field.set(obj, rs.getString(field.getName()));
+								obj.setValue(field.getName(), rs.getString(field.getName()));
 								break;
+							case "class java.util.Date":
 							case "java.util.Date":
 								java.sql.Date d=rs.getDate(field.getName());
 								//java.util.Date d2=d;
-								field.set(obj,d);
+								obj.setValue(field.getName(), d);
 								break;
 							case "boolean":
-								
-								field.setBoolean(obj, Boolean.parseBoolean(rs.getString(field.getName())));
+								obj.setValue(field.getName(), Boolean.parseBoolean(rs.getString(field.getName())));
 								break;
 							default:
 								ObjectMapper ow = new ObjectMapper();
 								
-								
+								/*
 								try{
 									Object x=ow.readValue(rs.getString(field.getName()), field.getType());
-									field.set(obj,x);
+									obj.setValue(field.getName(), x);
 								}catch (Exception e) {
 									Out.Write(e.getMessage(), LogType.ERROR);
 								}
+								*/
 								break;
 				        
 						 }
 						
 						
 					}
-					 newlistOfRecords.add((T)obj);
+					 newlistOfRecords.add((T)(obj.getRaw()));
 			    }
 			}
 			
-		} catch (InstantiationException | IllegalAccessException | SQLException e) {
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			request.setError(e);
 		}
 		//T a[]=new T[newlistOfRecords.size()];
 		
