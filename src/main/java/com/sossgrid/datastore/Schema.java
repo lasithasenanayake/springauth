@@ -1,7 +1,12 @@
 package com.sossgrid.datastore;
 
+import static org.mockito.Matchers.anyBoolean;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+
+import com.sossgrid.datastore.annotations.DataType;
 
 public class Schema {
 	private ArrayList <SchemaField> fields;
@@ -20,8 +25,18 @@ public class Schema {
 	}
 	
 	private void extractFromObject(Class cls){
-		for(Field f : cls.getFields()){
+		for(Field f : cls.getDeclaredFields()){
+			SchemaAnnotation schemaAnnotation = null;
+
+			for (Annotation a : f.getAnnotations())
+			if (a.getClass().toString().equals("com.sossgrid.datastore.annotations.DataType")){
+				DataType dtAnnotation = (DataType)a;
+				schemaAnnotation = new SchemaAnnotation(dtAnnotation);
+				break;
+			}
+			
 			SchemaField scField = new SchemaField(f.getName(), f.getType().toString());
+			scField.setAnnotations(schemaAnnotation);
 			this.fields.add(scField);
 		}	
 	}

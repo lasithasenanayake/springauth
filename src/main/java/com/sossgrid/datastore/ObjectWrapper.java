@@ -24,13 +24,14 @@ public class ObjectWrapper {
 	public Object getValue (String field){
 		if (defObj !=null){
 			if (defObjFields ==null){
-				defObjFields = defObj.getClass().getFields();
+				defObjFields = defObj.getClass().getDeclaredFields();
 			}
 			
 			for (Field f : defObjFields){
+				f.setAccessible(true);
 				if (f.getName().equals(field)){
 					try {
-						return f.get(field);
+						return f.get(defObj);
 					} catch (IllegalArgumentException | IllegalAccessException e) {
 						e.printStackTrace();
 					}
@@ -44,7 +45,20 @@ public class ObjectWrapper {
 	
 	public void setValue (String field, Object value){
 		if (defObj !=null){
+			if (defObjFields ==null){
+				defObjFields = defObj.getClass().getDeclaredFields();
+			}
 			
+			for (Field f : defObjFields){
+				f.setAccessible(true);
+				if (f.getName().equals(field)){
+					try {
+						f.set(defObj, value);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}else if (mapObj !=null){
 			mapObj.put(field, value);
 		}

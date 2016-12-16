@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.sossgrid.common.DataFunction;
-<<<<<<< HEAD
 import com.sossgrid.datastore.SossData;
 import com.sossgrid.datastore.StoreOperation;
 import com.sossgrid.exceptions.ServiceException;
@@ -14,25 +13,11 @@ public class AuthHandler {
 	private SossData c =null;
 	
 	public AuthHandler(SossData Con){
-=======
-import com.sossgrid.datastore.SOSStore;
-import com.sossgrid.datastore.StoreOperation;
-import com.sossgrid.exceptions.UnAutherizedException;
-
-public class AuthHandler {
-	private SOSStore c =null;
-	
-	public AuthHandler(SOSStore Con){
->>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 		c=Con;
 	}
 	
 	public AuthHandler() throws Exception{
-<<<<<<< HEAD
 		c=new SossData();
-=======
-		c=new SOSStore();
->>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 	}
 	
 	public  AuthCertificate CreateSession(

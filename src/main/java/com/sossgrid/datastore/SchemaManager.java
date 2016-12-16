@@ -12,7 +12,7 @@ public class SchemaManager {
 	}
 	
 	private static Schema getSchemaFromClass (String tenantId, Class cls){
-		return null;
+		return new Schema(cls);
 	}
 	
 	public static Schema Get (String tenantId, String clsName){

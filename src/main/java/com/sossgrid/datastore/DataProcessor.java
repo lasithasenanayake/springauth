@@ -2,7 +2,7 @@ package com.sossgrid.datastore;
 
 import java.util.HashMap;
 
-import com.sossgrid.datastore.SOSStore;
+import com.sossgrid.datastore.SossData;
 
 public class DataProcessor {
 
@@ -30,7 +30,7 @@ public class DataProcessor {
 	}
 	
 	public DataResponse Process(){
-		DataResponse outData = new DataResponse("Greetings!!!");
+		DataResponse outData = new DataResponse("Operation Completed Successfully");
 		DataCommand dataCommand  = this.request.getDataCommand();
 		
 		try {
@@ -51,6 +51,7 @@ public class DataProcessor {
 					this.dataStore.Store(request, StoreOperation.InsertRecord);
 					break;
 				case Update:
+					this.dataStore.Store(request, StoreOperation.UpdateRecord);
 					break;
 				case Store:
 					//datastore.Store(Name, Objs, schema)

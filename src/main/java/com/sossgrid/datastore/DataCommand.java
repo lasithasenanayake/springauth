@@ -96,7 +96,8 @@ public class DataCommand {
 		if (this.body.containsKey("object")){
 			if (saveObj == null){
 				Object inputObj = this.body.get("object");
-				if (this.schema==null) loadSchema(inputObj);
+				if (this.schema==null) 
+					loadSchema(inputObj);
 				saveObj = new ObjectWrapper(this.schema, inputObj);
 			}
 
@@ -117,6 +118,10 @@ public class DataCommand {
 	
 	public Schema getSchema(){
 		return this.schema;
+	}
+	
+	public void setSchema (Schema s){
+		this.schema = s;
 	}
 	
 	public HashMap <String, String> getHeaders() {

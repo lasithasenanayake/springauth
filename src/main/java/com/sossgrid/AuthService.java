@@ -30,11 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.sossgrid.authlib.*;
 import com.sossgrid.common.DataFunction;
-<<<<<<< HEAD
 import com.sossgrid.datastore.SossData;
-=======
-import com.sossgrid.datastore.SOSStore;
->>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 import com.sossgrid.datastore.StoreOperation;
 import com.sossgrid.datastore.DataResponse;
 import com.sossgrid.exceptions.ServiceException;
@@ -52,11 +48,7 @@ public class AuthService implements Filter  {
 			@Context HttpServletRequest req,
 			@Context HttpServletResponse response) throws UnAutherizedException,ServiceException{
 		try{
-<<<<<<< HEAD
 			SossData c=new SossData();
-=======
-			SOSStore c=new SOSStore();
->>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 			
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", Email);
@@ -155,11 +147,7 @@ public class AuthService implements Filter  {
 		
 		//UserProfile u=new UserProfile(User.getUserid())
 		try{
-<<<<<<< HEAD
 			SossData c=new SossData();
-=======
-			SOSStore c=new SOSStore();
->>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 			HashMap<String, Object> query=new HashMap<String, Object>();
 			query.put("email", User.getEmail());
 			ArrayList<UserProfile> users= c.<UserProfile>Retrive("users", query, UserProfile.class);
