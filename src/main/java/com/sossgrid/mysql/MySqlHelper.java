@@ -15,7 +15,10 @@ import com.sossgrid.datastore.DataCommand;
 import com.sossgrid.datastore.DataRequest;
 import com.sossgrid.datastore.ObjectWrapper;
 import com.sossgrid.datastore.Schema;
+<<<<<<< HEAD
 import com.sossgrid.datastore.SchemaAnnotation;
+=======
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 import com.sossgrid.datastore.SchemaField;
 import com.sossgrid.datastore.StoreOperation;
 import com.sossgrid.datastore.annotations.DataType;
@@ -108,7 +111,10 @@ public class MySqlHelper {
 	
 	public static String GetUpdate(DataRequest request){
 		DataCommand command = request.getDataCommand();
+<<<<<<< HEAD
 		ObjectWrapper storeObject = command.getStorageObject();
+=======
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 		//Object someObject,String Name
 		
 		String strSql="Update "+ command.getClassName() + " SET ";
@@ -119,6 +125,7 @@ public class MySqlHelper {
 		for (SchemaField field : schema.GetAll()) {
 		    Object value;
 			try {
+<<<<<<< HEAD
 				
 				boolean isprimary=false;
 				int datalength=0;
@@ -129,6 +136,18 @@ public class MySqlHelper {
 				}
 				
 				value = storeObject.getValue(field.getName());
+=======
+				Object dType = null;
+				boolean isprimary=false;
+				int datalength=0;
+				dType = field.getAnnotation("com.sossgrid.datastore.annotations.DataType");
+				
+				if (dType !=null){
+					isprimary=((DataType)dType).IsPrimary();
+				}
+				
+				value = schema.Get(field.getName());
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 				System.out.println(field.getName() + "=" + value + " type " +field.getType());
 				if(!isprimary){
 					strColumn+=field.getName()+"="+GenerateValueParam(field.getType(),value)+",";
@@ -156,6 +175,7 @@ public class MySqlHelper {
 	
 	public static String GetSelect(DataRequest request){
 		DataCommand command = request.getDataCommand();
+<<<<<<< HEAD
 		HashMap<String, Object> requestBody = command.getBody();
 		
 		String strSelect ="Select * from "+command.getClassName();
@@ -164,6 +184,15 @@ public class MySqlHelper {
 		
 		if (queryParams !=null)
 			for(Entry<String, Object> entry : queryParams.entrySet()) {
+=======
+		String strSelect ="Select * from "+command.getClassName();
+		boolean first=true;
+		HashMap<String,Object> queryParams = (HashMap<String,Object>)command.getBody().get("queryParams");
+		
+		if (queryParams !=null)
+			for(Entry<String, Object> entry : queryParams.entrySet()) {
+			    String key = entry.getKey();
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 			    if(first){
 			    	strSelect+=" Where "+entry.getKey()+"="+GenerateValueParam(entry.getValue().getClass().getName(),entry.getValue());
 			    }else{
@@ -387,11 +416,20 @@ public class MySqlHelper {
 		for (SchemaField field : schema.GetAll()) {
 			boolean isNull=true;
 
+<<<<<<< HEAD
 			SchemaAnnotation annotation = field.getAnnotations();
 			int datalength=0;
 			
 			if (annotation !=null){ 
 				if(annotation.isPrimary()){
+=======
+			Object dTypeAnnotation = field.getAnnotation("com.sossgrid.datastore.annotations.DataType");
+			int datalength=0;
+			
+			if (dTypeAnnotation !=null){
+				DataType dType = (DataType)dTypeAnnotation; 
+				if(dType.IsPrimary()){
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 					if(isPrimaryOK(field)){
 						if(annotation.getMaxLen()<255){
 							strPrimaryKeys+=field.getName()+",";

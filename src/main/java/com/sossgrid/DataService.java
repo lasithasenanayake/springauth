@@ -94,6 +94,7 @@ public class DataService {
 			dataCommand.setHeaders(headers);
 			
 			if (!method.equals("GET"))
+<<<<<<< HEAD
 				try {
 					dataCommand.setBody(this.getRequestBody(request));
 				} catch (Exception e) {
@@ -101,10 +102,14 @@ public class DataService {
 					dataCommand.setErrorMessage("Unable to Parse JSON body : " + e.getMessage());
 					return dataCommand;
 				}
+=======
+				dataCommand.setBody(this.getRequestBody(request));
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 			else 
 				dataCommand.setBody(new HashMap<String,Object>());
 			
 			dataCommand.loadSchema();
+<<<<<<< HEAD
 			
 			switch (method){
 				case "GET":
@@ -170,11 +175,63 @@ public class DataService {
 					dataCommand.setErrorMessage("Bad Request Type");
 					break;
 			}
+=======
+		}
+		
+		switch (method){
+			case "GET":
+				if (qString ==null){
+					dataCommand.setOperation(DataOperation.Get);
+				}else {
+					if (headers.containsKey("schema"))
+						dataCommand.setOperation(DataOperation.GetSchema);
+				}
+				break;
+			case "POST":
+				if (qString ==null)
+					dataCommand.setOperation(DataOperation.Insert);
+				else {
+					if (headers.containsKey("schema"))
+						dataCommand.setOperation(DataOperation.CreateSchema);
+					else if (headers.containsKey("store"))
+						dataCommand.setOperation(DataOperation.Store);
+				}
+				break;
+			case "PUT":
+				if (qString ==null)
+					dataCommand.setOperation(DataOperation.Update);
+				else {
+					if (headers.containsKey("schema"))
+						dataCommand.setOperation(DataOperation.UpdateSchema);
+				}
+				break;
+			case "PATCH":
+				if (qString ==null)
+					dataCommand.setOperation(DataOperation.Update);
+				else {
+					if (headers.containsKey("schema"))
+						dataCommand.setOperation(DataOperation.UpdateSchema);
+				}
+				break;
+			case "DELETE":
+				if (qString ==null)
+					dataCommand.setOperation(DataOperation.Delete);
+				else {
+					if (headers.containsKey("schema"))
+						dataCommand.setOperation(DataOperation.DeleteSchema);
+				}
+				break;
+			default:
+				dataCommand.setValid(false);
+				dataCommand.setErrorMessage("Bad Request Type");
+				break;
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 		}
 
 		return dataCommand;
 	}
 	
+<<<<<<< HEAD
 	private HashMap<String,Object> getRequestBody(HttpServletRequest request) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
 		String postBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
@@ -183,6 +240,26 @@ public class DataService {
 	
 	    HashMap<String,Object> map = mapper.readValue(postBody, typeRef); 
 		return map;
+=======
+	private HashMap<String,Object> getRequestBody(HttpServletRequest request){
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			String postBody = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+
+		    TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+
+            HashMap<String,Object> map = mapper.readValue(postBody, typeRef); 
+			return map;
+
+		} catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return new HashMap<String,Object>();
+>>>>>>> 22f44b4f06afadea0e7ee1f9e65b18286b81653f
 	}
 	
 }

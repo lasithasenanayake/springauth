@@ -11,7 +11,7 @@ public class ResourceExtractor {
 		o.put("server", "localhost");
 		o.put("database", "s_"+Domain.replace('.', '_'));
 		o.put("username", "root");
-		o.put("password", "sossgrid");
+		o.put("password", "root");
 		o.put("dataadapter", "com.sossgrid.mysql.MysqlConnector");
 		return o;
 	}
