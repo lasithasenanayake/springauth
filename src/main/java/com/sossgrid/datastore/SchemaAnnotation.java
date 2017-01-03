@@ -1,12 +1,20 @@
 package com.sossgrid.datastore;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sossgrid.datastore.annotations.DataType;
 
 public class SchemaAnnotation {
-	private String fieldName = "";
-	private int minLen = 0;
-	private int maxLen = 0;
-	private boolean isPrimary = false;
+	@JsonProperty("fieldName")
+	private String fieldName;
+	
+	@JsonProperty("minLen")
+	private int minLen;
+	
+	@JsonProperty("maxLen")
+	private int maxLen;
+	
+	@JsonProperty("isPrimary")
+	private boolean isPrimary;
 	
 	public SchemaAnnotation (DataType dt){
 		this.fieldName = dt.FieldName();
@@ -16,7 +24,7 @@ public class SchemaAnnotation {
 	}
 	
 	public SchemaAnnotation(){
-		
+		//deserialize form JSON
 	}
 	
 	public String getFieldName() {

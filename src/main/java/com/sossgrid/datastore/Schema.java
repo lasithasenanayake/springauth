@@ -6,9 +6,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sossgrid.datastore.annotations.DataType;
 
+
 public class Schema {
+
 	private ArrayList <SchemaField> fields;
 	
 	public Schema(){

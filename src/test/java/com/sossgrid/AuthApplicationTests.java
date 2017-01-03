@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-//import com.mysql.jdbc.log.Log;
+import com.mysql.jdbc.log.Log;
 import com.sossgrid.authlib.AuthCertificate;
 import com.sossgrid.datastore.StoreOperation;
 import com.sossgrid.datastore.Schema;
@@ -27,8 +27,8 @@ import com.sossgrid.mysql.TestObject;
 
 import junit.framework.Assert;
 
-//@RunWith(SpringRunner.class)
-//@SpringBootTest
+@RunWith(SpringRunner.class)
+@SpringBootTest
 public class AuthApplicationTests {
 /*	
 	MysqlConnector mysql=new MysqlConnector();

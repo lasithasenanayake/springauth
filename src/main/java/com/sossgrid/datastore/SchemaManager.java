@@ -2,13 +2,16 @@ package com.sossgrid.datastore;
 
 import java.util.HashMap;
 
+import com.sossgrid.datastore.schemarepo.*;
+
 public class SchemaManager {
 	
 	private static HashMap<Class, Schema> schemaClassMapping = new HashMap<>();
 	private static HashMap<String, Schema> schemaStringMapping = new HashMap<>();
 	
 	private static Schema getSchemaFromRepo(String tenantId, String clsName){
-		return SchemaMockData.getMockSchema(tenantId, clsName);
+		AbstractSchemaRepo repo = SchemaRepoFactory.GetRepository(); 
+		return repo.Get(tenantId, clsName);
 	}
 	
 	private static Schema getSchemaFromClass (String tenantId, Class cls){
