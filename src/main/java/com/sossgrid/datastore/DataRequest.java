@@ -1,6 +1,9 @@
 package com.sossgrid.datastore;
 
 import java.util.HashMap;
+
+import com.sossgrid.authlib.AuthCertificate;
+
 import java.util.ArrayList;
 
 public class DataRequest {
@@ -36,4 +39,5 @@ public class DataRequest {
 	public HashMap<String,String> getOperationParameters(){
 		return this.dataCommand.getHeaders();
 	}
+
 }

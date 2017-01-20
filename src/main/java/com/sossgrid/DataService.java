@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 
+import org.glassfish.jersey.server.validation.ValidationError;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -17,10 +19,14 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sossgrid.authlib.AuthCertificate;
+import com.sossgrid.common.JSONFunction;
+import com.sossgrid.configuration.ConfigurationManager;
 import com.sossgrid.datastore.*;
+import com.sossgrid.exceptions.SossDataException;
+import com.sossgrid.exceptions.UnAutherizedException;
 
 @Controller
-@RequestMapping(value="*")
 public class DataService {
 
 	@RequestMapping(value="/data/*")
@@ -29,38 +35,39 @@ public class DataService {
 	}
 
 	private DataResponse processRequest(HttpServletRequest request){
-		DataCommand sendCommand = getDataCommand(request);
+		DataRequest dataRequest = null;
+		try {
+			DataCommand sendCommand = getDataCommand(request);
+			dataRequest = new DataRequest(sendCommand);
+			return (new DataProcessor(dataRequest)).Process();
+		} catch (Exception e) {
+			if (dataRequest !=null)
+					return DataProcessor.SendError(dataRequest, e);
+			else
+				return DataProcessor.SendError(e);
+		}			
 
-		if (sendCommand.isValid()){
-			DataRequest reqInfo = new DataRequest(sendCommand);
-			try {
-				return (new DataProcessor(reqInfo)).Process();
-			} catch (Exception e) {
-				return DataProcessor.SendError(e);	
-			}			
-		}else{
-			return DataProcessor.SendError(sendCommand.getErrorMessage());
-		}
 	}
 	
-	private DataCommand getDataCommand(HttpServletRequest request){
+	private DataCommand getDataCommand(HttpServletRequest request) throws Exception{
 		DataCommand dataCommand = new DataCommand();
 		
+		Object canValidateAuth = ConfigurationManager.Get("authValidateForData");
+		if (canValidateAuth != null)
+			if (((boolean)canValidateAuth) == true)
+				validateAuthCertificate(dataCommand, request);
+				
 		String tenantId = request.getServerName();
 		String method = request.getMethod(); 
 		String nsAndClass = request.getRequestURI().replace("/data/", "").trim();
 		String qString = request.getQueryString();
 		HashMap<String,String> headers = new HashMap<>();
 		
-		if (nsAndClass.indexOf('/') != -1){
-			dataCommand.setValid(false);
-			dataCommand.setErrorMessage("Class is not set for data layer");
-		}
+		if (nsAndClass.indexOf('/') != -1)
+			throw new SossDataException ("Class is not set for data layer");
 		
-		if (nsAndClass.length() ==0){
-			dataCommand.setValid(false);
-			dataCommand.setErrorMessage("Classname not entered");
-		}
+		if (nsAndClass.length() ==0)
+			throw new SossDataException ("Classname not entered");
 		
 		if (dataCommand.isValid()){
 			if (qString !=null){
@@ -97,9 +104,7 @@ public class DataService {
 				try {
 					dataCommand.setBody(this.getRequestBody(request));
 				} catch (Exception e) {
-					dataCommand.setValid(false);
-					dataCommand.setErrorMessage("Unable to Parse JSON body : " + e.getMessage());
-					return dataCommand;
+					throw new SossDataException ("Unable to Parse JSON body : " + e.getMessage());
 				}
 			else 
 				dataCommand.setBody(new HashMap<String,Object>());
@@ -109,10 +114,7 @@ public class DataService {
 			switch (method){
 				case "GET":
 					if (qString ==null){
-						if (headers.containsKey("schema"))
-							dataCommand.setOperation(DataOperation.GetSchema);
-						else
-							dataCommand.setOperation(DataOperation.Get);
+						dataCommand.setOperation(DataOperation.Get);
 					}else {
 						if (headers.containsKey("query")){
 							HashMap<String,Object> fullRequest = new HashMap<>();
@@ -125,45 +127,53 @@ public class DataService {
 							}
 							fullRequest.put("queryParams", queryObject);
 							dataCommand.setBody(fullRequest);
-						}
-						
-						dataCommand.setOperation(DataOperation.Get);
+							dataCommand.setOperation(DataOperation.Get);
+						} else if (headers.containsKey("schema"))
+							dataCommand.setOperation(DataOperation.GetSchema); 						
 					}
 					
 					break;
 				case "POST":
 					if (qString ==null)
 						dataCommand.setOperation(DataOperation.Insert);
+					/*
 					else {
 						if (headers.containsKey("schema"))
 							dataCommand.setOperation(DataOperation.CreateSchema);
 						else if (headers.containsKey("store"))
 							dataCommand.setOperation(DataOperation.Store);
 					}
+					*/
 					break;
 				case "PUT":
 					if (qString ==null)
 						dataCommand.setOperation(DataOperation.Update);
+					/*
 					else {
 						if (headers.containsKey("schema"))
 							dataCommand.setOperation(DataOperation.UpdateSchema);
 					}
+					*/
 					break;
 				case "PATCH":
 					if (qString ==null)
 						dataCommand.setOperation(DataOperation.Update);
+					/*
 					else {
 						if (headers.containsKey("schema"))
 							dataCommand.setOperation(DataOperation.UpdateSchema);
 					}
+					*/
 					break;
 				case "DELETE":
 					if (qString ==null)
 						dataCommand.setOperation(DataOperation.Delete);
+					/*
 					else {
 						if (headers.containsKey("schema"))
 							dataCommand.setOperation(DataOperation.DeleteSchema);
 					}
+					*/
 					break;
 				default:
 					dataCommand.setValid(false);
@@ -172,6 +182,8 @@ public class DataService {
 			}
 		}
 
+		dataCommand.checkSchemaPermission();
+		
 		return dataCommand;
 	}
 	
@@ -183,6 +195,31 @@ public class DataService {
 	
 	    HashMap<String,Object> map = mapper.readValue(postBody, typeRef); 
 		return map;
+	}
+	
+	private void validateAuthCertificate(DataCommand dCommand, HttpServletRequest hReq) throws Exception{
+		String authCookie;
+		
+		authCookie = hReq.getHeader("sossAuth");
+		Cookie[] cookies = hReq.getCookies();
+		
+		if (authCookie == null && cookies !=null)
+		for (Cookie c : cookies)
+		if (c.getName().equals("sossAuth")){
+			authCookie = c.getValue();
+			break;
+		}
+		
+		if (authCookie == null){
+			throw new SossDataException ("Auth certificatte not available in cookies or headers");
+		}else{
+			Object authCert = JSONFunction.GetObjectFromString(authCookie, AuthCertificate.class);
+			if (authCert == null){
+				throw new SossDataException ("Incorrect format in auth certificatte in headers or cookies");				
+			}else
+				dCommand.setAuthCertificate((AuthCertificate)authCert);
+		}
+		
 	}
 	
 }

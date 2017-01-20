@@ -3,6 +3,10 @@ package com.sossgrid.datastore;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.sossgrid.authlib.AuthCertificate;
+import com.sossgrid.configuration.ConfigurationManager;
+import com.sossgrid.exceptions.SossDataException;
+
 public class DataCommand {
 	private boolean isValid;
 	private String errorMessage;
@@ -20,6 +24,8 @@ public class DataCommand {
 	private Schema schema;
 	
 	private Class classObject;
+	
+	private AuthCertificate authCertificate;
 	
 	public DataCommand(){
 		this.setValid(true);
@@ -48,7 +54,7 @@ public class DataCommand {
 		
 			return this.classObject;
 		} catch (ClassNotFoundException e) {
-			return null;
+			return null; //unreachable source code block!!!!
 		}
 	}
 	
@@ -74,15 +80,10 @@ public class DataCommand {
 	
 	public ObjectWrapper newStorageObject(){
 		Object initObject = null;
-		System.out.println(this.classObject);
 		if (this.classObject !=null)
 			try {
 				initObject = this.classObject.newInstance();
-			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
+			} catch (InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 		else
@@ -112,8 +113,12 @@ public class DataCommand {
 	}
 	
 	
-	public void loadSchema(){
+	public void loadSchema() throws SossDataException{
 		this.schema = SchemaManager.Get(this.tenantId, this.className);
+	}
+	
+	public void checkSchemaPermission() throws SossDataException{
+		SchemaManager.GetPermission(this, this.tenantId, this.className);
 	}
 	
 	public Schema getSchema(){
@@ -155,5 +160,12 @@ public class DataCommand {
 		this.errorMessage = errorMessage;
 	}
 	
-	
+
+	public AuthCertificate getAuthCertificate() {
+		return authCertificate;
+	}
+
+	public void setAuthCertificate(AuthCertificate authCertificate) {
+		this.authCertificate = authCertificate;
+	}
 }

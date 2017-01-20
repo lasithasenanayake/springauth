@@ -22,63 +22,63 @@ public class DataProcessor {
 			i.CreateConnection(conts);
 			dataStore=i;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			dataStore=null;
 			throw e;
-			//e.printStackTrace();
 		}
 	}
 	
-	public DataResponse Process(){
-		DataResponse outData = new DataResponse("Operation Completed Successfully");
+	public DataResponse Process() throws Exception {
+		Object operationResponse = null;
 		DataCommand dataCommand  = this.request.getDataCommand();
 		
-		try {
-			switch (dataCommand.getOperation()){
-				case CreateSchema:
-					break;
-				case DeleteSchema:
-					break;
-				case GetSchema:
-					break;
-				case UpdateSchema:
-					 break;
-				case Get:
-					Object queryData =this.dataStore.Retrive(this.request, dataCommand.getClassObject());
-					outData.setResponse(queryData);
-					break;
-				case Insert:
-					this.dataStore.Store(request, StoreOperation.InsertRecord);
-					break;
-				case Update:
-					this.dataStore.Store(request, StoreOperation.UpdateRecord);
-					break;
-				case Store:
-					//datastore.Store(Name, Objs, schema)
-					break;
-				case Delete:
-					break;
-			}
-			
-			if (request.isError())
-				outData.setError(request.getError());
-			
-		} catch (Exception e) {
-			outData.setError(e);
+		switch (dataCommand.getOperation()){
+			case GetSchema:
+				operationResponse = dataCommand.getSchema();
+				break;
+			case Get:
+				operationResponse = this.dataStore.Retrive(this.request, dataCommand.getClassObject());
+				break;
+			case Insert:
+				operationResponse = this.dataStore.Store(request, StoreOperation.InsertRecord);
+				break;
+			case Update:
+				operationResponse = this.dataStore.Store(request, StoreOperation.UpdateRecord);
+				break;
+			case Store:
+				//datastore.Store(Name, Objs, schema)
+				break;
+			case Delete:
+				break;
 		}
-			
+		
+		DataResponse outData;
+		
+		if (operationResponse !=null)
+			outData = new DataResponse(operationResponse);
+		else{
+			outData = new DataResponse("Operation not implemented!!!");
+			outData.setSuccess(false);
+		}
+		
 		return outData;
 	}
 	
-	public static DataResponse SendError (String errorMessage){
-		DataResponse outData = new DataResponse(errorMessage);
+	
+	public static DataResponse SendError (DataRequest request, Exception ex){
+		DataResponse outData = new DataResponse(ex);
 		outData.setSuccess(false);
+		String message = ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.getMessage();
+		outData.setResponse(message);
+		outData.setError(ex);
 		return outData;
 	}
 	
 	public static DataResponse SendError (Exception ex){
 		DataResponse outData = new DataResponse(ex.getMessage());
 		outData.setSuccess(false);
+		String message = ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.getMessage();
+		outData.setResponse(message);
+		outData.setError(ex);
 		return outData;
 	}
 	

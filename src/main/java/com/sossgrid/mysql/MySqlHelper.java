@@ -94,9 +94,7 @@ public class MySqlHelper {
 				
 				
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				request.setError(e);
+				throw e;
 			} 
 		}
 		strColumn=strColumn+"sysversionid)  ";
@@ -140,8 +138,7 @@ public class MySqlHelper {
 				
 				
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw e;
 			} 
 			
 		    
@@ -176,7 +173,7 @@ public class MySqlHelper {
 		
 	}
 	
-	public static String GetDelete(Object someObject,String Name){
+	public static String GetDelete(Object someObject,String Name)throws Exception{
 		
 		
 		String strSql="Delete From "+ Name ;
@@ -213,12 +210,8 @@ public class MySqlHelper {
 				}
 				
 				
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IllegalAccessException | IllegalArgumentException e) {
+				throw e;
 			} 
 			
 		    
@@ -232,7 +225,6 @@ public class MySqlHelper {
 	
 	public static String ConvertSQLtype(String datatype,int datalength,boolean isNull){
 		String strValue="";
-		
 		
 		
 		//System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
@@ -410,6 +402,7 @@ public class MySqlHelper {
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
 				Out.Write("GetCreateTableStatment "+e.getMessage(), LogType.ERROR);
+				throw e;
 			} 
 			
 		    

@@ -16,11 +16,11 @@ import com.sossgrid.datastore.StoreOperation;
 import com.sossgrid.datastore.DataResponse;
 import com.sossgrid.mysql.TestObject;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+//@RunWith(SpringRunner.class)
+//@SpringBootTest
 public class DataConnectorTest {
 	
-	@Test
+	//@Test
 	public void OpenNewSystemConnection() throws Exception {
 			SossData c =new SossData();
 			TestObject testobj=new TestObject();
@@ -34,7 +34,7 @@ public class DataConnectorTest {
 		
 	}
 	
-	@Test
+	//@Test
 	public void OpenNewConnection() throws Exception {
 		//try{
 			SossData c =new SossData();

@@ -27,8 +27,8 @@ import com.sossgrid.mysql.TestObject;
 
 import junit.framework.Assert;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+//@RunWith(SpringRunner.class)
+//@SpringBootTest
 public class AuthApplicationTests {
 /*	
 	MysqlConnector mysql=new MysqlConnector();

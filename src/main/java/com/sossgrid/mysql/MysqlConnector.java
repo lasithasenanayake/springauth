@@ -40,18 +40,17 @@ public class MysqlConnector implements IDataConnector{
 				}catch(SQLException ex1){
 					Out.Write(ex1,LogType.ERROR);
 					Out.Write(ex1.getErrorCode(),LogType.ERROR);
-					throw new Exception(ex1.getMessage());
+					throw ex1;
 				}
 			}else{
-				throw new Exception(ex.getMessage());
+				throw ex;
 			}
 			
 		}
 	}
 
 	@Override
-	public DataResponse Store(DataRequest request,StoreOperation commadtype) {
-		DataResponse status;
+	public Object Store(DataRequest request,StoreOperation commadtype) throws Exception{
 		DataCommand command = request.getDataCommand();
 		
 		switch(commadtype){
@@ -61,8 +60,6 @@ public class MysqlConnector implements IDataConnector{
 				try {
 					con.createStatement().executeUpdate(insertSQL);
 					//insertStatment.executeQuery();
-					status=new DataResponse(command.getStorageObject().getRaw());
-					return status;
 				} catch (SQLException e) {
 					Out.Write(e.getErrorCode(), LogType.ERROR);
 					Out.Write(e.getMessage(), LogType.ERROR);
@@ -72,20 +69,12 @@ public class MysqlConnector implements IDataConnector{
 							Out.Write("Creating or altering table", LogType.DEBUG);
 							MySqlHelper.GenerateTable(request, con);
 							Out.Write("Retry SQL command.", LogType.DEBUG);
-							Store(request,commadtype);
-							status=new DataResponse(command.getStorageObject().getRaw());
-							return status;
-							
-						} catch (SQLException e1) {
-							// TODO Auto-generated catch block
-							status =new DataResponse(e1);
-							return status;
-							
-						}catch (Exception e2) {
-							// TODO: handle exception
-							status =new DataResponse(e2);
-							return status;
+							Store(request,commadtype);						
+						} catch (Exception e2) {
+							throw e2;
 						}
+					}else{
+						throw e;
 					}
 				}
 				
@@ -95,8 +84,6 @@ public class MysqlConnector implements IDataConnector{
 			String updateSQL =MySqlHelper.GetUpdate(request);
 			try {
 				con.createStatement().executeUpdate(updateSQL);
-				status=new DataResponse(command.getStorageObject().getRaw());
-				return status;
 			} catch (SQLException e) {
 				Out.Write(e.getErrorCode(), LogType.ERROR);
 				Out.Write(e.getMessage(), LogType.ERROR);
@@ -106,34 +93,23 @@ public class MysqlConnector implements IDataConnector{
 					MySqlHelper.GenerateTable(request, con);
 					Out.Write("Retry SQL command.", LogType.DEBUG);
 					Store(request,commadtype);
-					status=new DataResponse(command.getStorageObject().getRaw());
-					return status;
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					status =new DataResponse(e1);
-					return status;
-					
-				}catch (Exception e2) {
-					// TODO: handle exception
-					status =new DataResponse(e2);
-					return status;
+				} catch (Exception e2) {
+					throw e2;
 				}
 			}
-			//break;
+			break;
 		
 		}
-		status =new DataResponse(new Exception("Error Database Conenection is not established"));
-		return status;
+		return command.getStorageObject().getRaw();
 	}
 	
 	private  boolean isDbConnected() {
 	    //final String CHECK_SQL_QUERY = "SELECT 1";
 	    try {
-			if(!con.isClosed() || con!=null){
+			if(!con.isClosed() || con!=null)
 				return true;
-			}
+			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			return false;
 		}
 	    return false;
@@ -141,39 +117,33 @@ public class MysqlConnector implements IDataConnector{
 	}
 
 	@Override
-	public DataResponse[] Store(DataRequest request) {
-		// TODO Auto-generated method stub
+	public Object[] Store(DataRequest request)  throws Exception{
 		return null;
 	}
 
 	@Override
-	public DataResponse Delete(DataRequest request) {
+	public Object Delete(DataRequest request)  throws Exception{
 		DataResponse status;
 		DataCommand command = request.getDataCommand();
 		String updateSQL =MySqlHelper.GetUpdate(request);
 		try {
 			con.createStatement().executeUpdate(updateSQL);
-			status=new DataResponse(command.getStorageObject().getRaw());
-			return status;
 		} catch (SQLException e) {
 			Out.Write(e.getErrorCode(), LogType.ERROR);
 			Out.Write(e.getMessage(), LogType.ERROR);
+			throw e;
 		}
-		
-		
-		status =new DataResponse(new Exception("Error Database Conenection is not established"));
-		return status;
-		
+				
+		return command.getStorageObject().getRaw();
 	}
 
 	@Override
-	public DataResponse[] Delete(String Name, Object[] Objs) {
-		// TODO Auto-generated method stub
+	public Object[] Delete(String Name, Object[] Objs)  throws Exception{
 		return null;
 	}
 
 	@Override
-	public <T> ArrayList<T> Retrive(DataRequest request,Class<T> c) {
+	public <T> ArrayList<T> Retrive(DataRequest request,Class<T> c) throws Exception{
 		DataCommand command = request.getDataCommand();
 		ArrayList<T> newlistOfRecords =new ArrayList<T>();
 		
@@ -238,9 +208,8 @@ public class MysqlConnector implements IDataConnector{
 			}
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			request.setError(e);
+			if(e.getErrorCode()!=1146)
+				throw e;
 		}
 		//T a[]=new T[newlistOfRecords.size()];
 		
