@@ -50,13 +50,22 @@ public class DataService {
 	}
 	
 	private DataCommand getDataCommand(HttpServletRequest request) throws Exception{
-		DataCommand dataCommand = new DataCommand();
+		DataCommand dataCommand = null;
+		try {
+			dataCommand =new DataCommand();
+		}catch (Exception ex){
+			throw new SossDataException ("Error creating data command");
+		}
 		
-		Object canValidateAuth = ConfigurationManager.Get("authValidateForData");
-		if (canValidateAuth != null)
-			if (((boolean)canValidateAuth) == true)
-				validateAuthCertificate(dataCommand, request);
-				
+		try{
+			Object canValidateAuth = ConfigurationManager.Get("authValidateForData");
+			if (canValidateAuth != null)
+				if (((boolean)canValidateAuth) == true)
+					validateAuthCertificate(dataCommand, request);
+		} catch (Exception ex){
+			throw new SossDataException ("Configuration load exception");
+		}
+		
 		String tenantId = request.getServerName();
 		String method = request.getMethod(); 
 		String nsAndClass = request.getRequestURI().replace("/data/", "").trim();
