@@ -169,3 +169,4 @@ public class DataCommand {
 		this.authCertificate = authCertificate;
 	}
 }
+
