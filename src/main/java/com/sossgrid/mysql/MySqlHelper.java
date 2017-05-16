@@ -53,8 +53,12 @@ public class MySqlHelper {
 				break;
 			case "class java.util.Date":
 			case "java.util.Date":
-				SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
-				strValue= "STR_TO_DATE('"+formatter.format((java.util.Date)value)+"','%m-%d-%Y %H:%i:%s')";
+				if (value instanceof String){
+					strValue= "STR_TO_DATE('"+value+"','%m-%d-%Y %H:%i:%s')";
+				}else{
+					SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
+					strValue= "STR_TO_DATE('"+formatter.format((java.util.Date)value)+"','%m-%d-%Y %H:%i:%s')";
+				}
 				break;
 			case "boolean":
 				strValue="'"+value.toString()+"'";
@@ -223,14 +227,19 @@ public class MySqlHelper {
 		return strSql +strWhere;
 	}
 	
-	public static String ConvertSQLtype(String datatype,int datalength,boolean isNull){
+	public static String ConvertSQLtype(String datatype,int datalength,boolean isNull, boolean isPrimary, boolean isAutoIncrement){
 		String strValue="";
 		
 		
 		//System.out.println(field.getName() + "=" + value + " type " +field.getType().getName());
         switch(datatype){
 			case "int":
-				strValue="INT "+((isNull)?"":"NOT")+" NULL,";
+				strValue="INT "+((isNull)?"":"NOT")+" NULL ";
+				if (isPrimary)
+					strValue += "PRIMARY KEY ";
+				if (isAutoIncrement)
+					strValue += "AUTO_INCREMENT ";
+				strValue += ",";
 				break;
 			case "float":
 				strValue="FLOAT "+((isNull)?"":"NOT")+" NULL,";
@@ -374,19 +383,23 @@ public class MySqlHelper {
 		
 		String strSql="Create Table "+ command.getClassName();
 		String strColumn="(";
-		String strPrimaryKeys="PRIMARY KEY (";
+		//String strPrimaryKeys="PRIMARY KEY (";
 		//String strValues="Values(";
 		for (SchemaField field : schema.GetAll()) {
 			boolean isNull=true;
 
 			SchemaAnnotation annotation = field.getAnnotations();
 			int datalength=0;
+			boolean isPrimary = false;
+			boolean isAutoIncrement = false;
 			
 			if (annotation !=null){ 
-				if(annotation.isPrimary()){
+				isPrimary = annotation.isPrimary();
+				isAutoIncrement = annotation.isAutoIncrement();
+				if(isPrimary){
 					if(isPrimaryOK(field)){
 						if(annotation.getMaxLen()<255){
-							strPrimaryKeys+=field.getName()+",";
+							//strPrimaryKeys+=field.getName()+",";
 							isNull=false;
 						}else{
 							throw new Exception(field.getName() + " Primary key is not valied for type "+field.getType() + " Length is too long "+ Integer.toString(datalength));
@@ -397,7 +410,7 @@ public class MySqlHelper {
 			}
 			
 			try {
-				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType(),datalength,isNull);    		    
+				strColumn+=field.getName()+" "+ConvertSQLtype(field.getType(),datalength,isNull, isPrimary, isAutoIncrement);    		    
 				
 			} catch (IllegalArgumentException e) {
 				// TODO Auto-generated catch block
@@ -407,12 +420,14 @@ public class MySqlHelper {
 			
 		    
 		}
-		strColumn+="sysversionid long NOT NULL,";
+		strColumn+="sysversionid long NOT NULL)";
+		/*
 		if(strPrimaryKeys.equals("PRIMARY KEY (")){
 			strColumn=strColumn.substring(0, strColumn.length()-1)+")";
 		}else{
 			strColumn=strColumn+strPrimaryKeys.substring(0, strPrimaryKeys.length()-1)+ "))";
 		}
+		*/
 		Out.Write(strSql + strColumn, LogType.DEBUG);
 		return strSql + strColumn;
 	}

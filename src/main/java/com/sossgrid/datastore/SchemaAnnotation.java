@@ -15,12 +15,16 @@ public class SchemaAnnotation {
 	
 	@JsonProperty("isPrimary")
 	private boolean isPrimary;
+
+	@JsonProperty("autoIncrement")
+	private boolean autoIncrement;
 	
 	public SchemaAnnotation (DataType dt){
 		this.fieldName = dt.FieldName();
 		this.minLen = dt.MinLen();
 		this.maxLen = dt.MaxLen();
 		this.isPrimary = dt.IsPrimary();
+		this.autoIncrement = dt.AutoIncrement();
 	}
 	
 	public SchemaAnnotation(){
@@ -57,6 +61,14 @@ public class SchemaAnnotation {
 	
 	public void setPrimary(boolean isPrimary) {
 		this.isPrimary = isPrimary;
+	}
+	
+	public boolean isAutoIncrement() {
+		return autoIncrement;
+	}
+	
+	public void setAutoIncrement(boolean isPrimary) {
+		this.autoIncrement = isPrimary;
 	}
 	
 	

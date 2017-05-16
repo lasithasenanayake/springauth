@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.jdbc.Statement;
 import com.sossgrid.datastore.*;
 import com.sossgrid.log.Out;
 import com.sossgrid.log.Out.LogType;
@@ -12,6 +13,7 @@ import java.lang.reflect.Field;
 import java.rmi.activation.ActivationGroupDesc.CommandEnvironment;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -52,13 +54,23 @@ public class MysqlConnector implements IDataConnector{
 	@Override
 	public Object Store(DataRequest request,StoreOperation commadtype) throws Exception{
 		DataCommand command = request.getDataCommand();
-		
+		StoreOperationOutput output = new StoreOperationOutput();
 		switch(commadtype){
 		case InsertRecord:
 			if(isDbConnected()){
 				String insertSQL=MySqlHelper.GetInsert(request);
 				try {
-					con.createStatement().executeUpdate(insertSQL);
+					
+					PreparedStatement stmt =  con.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
+					int numero = stmt.executeUpdate();
+
+					ResultSet rs = stmt.getGeneratedKeys();
+					if (rs.next()){
+					    output.setGeneratedId(rs.getInt(1));
+					}
+					
+					//int generatedId = con.createStatement().executeUpdate(insertSQL, Statement.RETURN_GENERATED_KEYS);
+					//output.setGeneratedId(generatedId);
 					//insertStatment.executeQuery();
 				} catch (SQLException e) {
 					Out.Write(e.getErrorCode(), LogType.ERROR);
@@ -69,7 +81,7 @@ public class MysqlConnector implements IDataConnector{
 							Out.Write("Creating or altering table", LogType.DEBUG);
 							MySqlHelper.GenerateTable(request, con);
 							Out.Write("Retry SQL command.", LogType.DEBUG);
-							Store(request,commadtype);						
+							output = (StoreOperationOutput)Store(request,commadtype);						
 						} catch (Exception e2) {
 							throw e2;
 						}
@@ -100,7 +112,7 @@ public class MysqlConnector implements IDataConnector{
 			break;
 		
 		}
-		return command.getStorageObject().getRaw();
+		return output;
 	}
 	
 	private  boolean isDbConnected() {

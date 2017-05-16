@@ -23,7 +23,7 @@ public class LocalSchemaRepo extends AbstractSchemaRepo {
 
 		if (!schemaCache.containsKey(key)){
 			String schemaLoc = ConfigurationManager.Get("schemaLocation").toString();
-			Path schemaPath = Paths.get(schemaLoc, tenantId, name + ".json");
+			Path schemaPath = Paths.get(schemaLoc, tenantId, "schemas", name + ".json");
 			String schemaData = FileFunction.ReadFile(schemaPath.toString());
 			Object schemaObj = JSONFunction.GetObjectFromString(schemaData, Schema.class);
 			Schema schema = schemaObj == null ? null : (Schema)(schemaObj);

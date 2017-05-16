@@ -13,4 +13,5 @@ public @interface DataType {
 	public int MinLen() default 0;
 	public int MaxLen() default 0;
 	public boolean IsPrimary() default false;
+	public boolean AutoIncrement() default false;
 }

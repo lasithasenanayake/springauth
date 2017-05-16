@@ -77,6 +77,10 @@ public class SchemaManager {
 	}
 	
 	private static void getPermissionLocally(DataCommand dataCommand,String tenantId, String className) throws SossDataException{
+		
+		if (dataCommand.getAuthCertificate() == null)
+			return;
+		
 		Path filePath = Paths.get(localSchemaFolder, tenantId + "." + className  + "." + dataCommand.getAuthCertificate().getEmail() + ".json");
 		
 		if (exceptionIfFound){ 
@@ -140,6 +144,8 @@ public class SchemaManager {
 							
 							if (lSchemaFolder  !=null){
 								localSchemaFolder = (String)lSchemaFolder;
+								Path path = Paths.get(localSchemaFolder, "schemas");
+								localSchemaFolder = path.toString();
 								isConfigLoaded = true;
 							}else
 								throw new SossDataException ("You have to configure the parameter in config : localSchemaFolder (should be set to a folder location)");
